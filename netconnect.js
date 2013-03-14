@@ -60,6 +60,7 @@ game.init = function() {
     
     this.createGame = function() {
         // create empty cells
+        this.cells = [];
         var size = this.width / this.rows;
         for (var r = 0; r < this.rows; ++r) {
             for (var c = 0; c < this.cols; ++c) {
@@ -122,7 +123,8 @@ game.init = function() {
             }
             var newlyMarked = prevUnmarkedCells - unmarkedCells;
             if (newlyMarked == 0) {
-                return 1;
+                difficulty = 1;
+                break;
             }
             var newDifficulty = 1 - newlyMarked / prevUnmarkedCells;
             if (newDifficulty > difficulty) {
@@ -130,6 +132,9 @@ game.init = function() {
             }
             this.draw(true);
             //alert(newlyMarked+' diff:'+newDifficulty);
+        }
+        for (var i in this.cells) {
+            this.cells[i].marked = false;
         }
         return difficulty;
     }
@@ -191,14 +196,25 @@ game.init = function() {
         return true;
     }
     
+    this.shuffle = function() {
+        for (var i = 0; i < this.cells.length; ++i) {
+            var cell = this.cells[i];
+            cell.shuffle();
+        }
+    }
+    
     this.width = 400;
     this.height = 400;
     this.rows = 5;
     this.cols = 5;
     this.cells = [];
-    this.createGame();
+    do {
+        this.createGame();
+    } while (this.getDifficulty() == 1);
+    var difficulty = this.getDifficulty();
+    this.shuffle();
     this.draw();
-    alert('Difficulty: ' + this.getDifficulty());
+    alert('Difficulty: ' + difficulty);
     
 }
 
@@ -397,6 +413,13 @@ function Cell(row, col, size, game) {
             }
         }
         return numCables == 1;
+    }
+    this.shuffle = function() {
+        var rotations = Math.floor(Math.random()*4);
+        for (var i = 0; i < rotations; ++i) {
+            this.rotateClockwise();
+        }
+        this.dirty = true;
     }
 }
 
