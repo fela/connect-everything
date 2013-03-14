@@ -129,7 +129,7 @@ game.init = function() {
                 difficulty = newDifficulty;
             }
             this.draw(true);
-            alert(newlyMarked+' diff:'+newDifficulty);
+            //alert(newlyMarked+' diff:'+newDifficulty);
         }
         return difficulty;
     }
@@ -183,14 +183,18 @@ game.init = function() {
                     return false;
                 }
             }
+            // special case: two terminal cells cannot be connected
+            if (n && cableCell && cell.isTerminal() && n.isTerminal()){
+                return false;
+            }
         }
         return true;
     }
     
     this.width = 400;
     this.height = 400;
-    this.rows = 6;
-    this.cols = 6;
+    this.rows = 5;
+    this.cols = 5;
     this.cells = [];
     this.createGame();
     this.draw();
@@ -384,6 +388,15 @@ function Cell(row, col, size, game) {
             default:
                 return null;
         }
+    }
+    this.isTerminal = function() {
+        var numCables = 0;
+        for (var i = 0; i < this.cables.length; ++i) {
+            if (this.cables[i]) {
+                numCables++;
+            }
+        }
+        return numCables == 1;
     }
 }
 
