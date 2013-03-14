@@ -14,6 +14,7 @@ function randomDirection() {
     return Math.floor(Math.random()*4);
 }
 
+// gets a random element from an array
 Array.prototype.random = function() {
     return this[Math.floor(Math.random() * this.length)];
 }
@@ -44,13 +45,16 @@ game.init = function() {
     }
     
     this.cellAt = function(row, col) {
+        if (row < 0 || row >= this.rows || col < 0 || col >= this.cols) {
+            return null;
+        }
         var i = row * this.cols + col;
         return this.cells[i];
     }
     
-    this.draw = function() {
+    this.draw = function(force) {
         for (var i = 0; i < this.cells.length; ++i) {
-            this.cells[i].draw();
+            this.cells[i].draw(force);
         }
     }
     
@@ -95,6 +99,94 @@ game.init = function() {
         }
     }
     
+    // there might be multiple solutions if the difficulty is equal to 1
+    this.getDifficulty = function() {
+        var difficulty = 0;
+        var unmarkedCells = this.rows * this.cols;
+        while (unmarkedCells > 0) {
+            var prevUnmarkedCells = unmarkedCells;
+            var toBeMarked = [];
+            for (var i = 0; i < this.cells.length; ++i) {
+                var cell = this.cells[i];
+                if (cell.marked) {
+                    continue; // already marked
+                }
+                if (this.isSolutionCell(cell)) {
+                    toBeMarked.push(cell);
+                    unmarkedCells--;
+                }
+            }
+            
+            for (var i = 0; i < toBeMarked.length; ++i) {
+                toBeMarked[i].marked = true;
+            }
+            var newlyMarked = prevUnmarkedCells - unmarkedCells;
+            if (newlyMarked == 0) {
+                return 1;
+            }
+            var newDifficulty = 1 - newlyMarked / prevUnmarkedCells;
+            if (newDifficulty > difficulty) {
+                difficulty = newDifficulty;
+            }
+            this.draw(true);
+            alert(newlyMarked+' diff:'+newDifficulty);
+        }
+        return difficulty;
+    }
+    
+    this.isSolutionCell = function(cell) {
+        // try all rotations
+        // for each try if it is possible by looking
+        // at the marked neighbors and the border
+        // if only one rotation (the current) is possible return true
+        
+        // it is assumed that the current rotation, if any, is the solution
+        // so it will be anough to check all other rotations
+        var solutions = []; // current rotation is a solution
+        // check other rotations
+        for (var rotation = 1; rotation < 4; ++rotation) {
+            if (this.isSolutionCellRotated(cell, rotation)) {
+                solutions.push(rotation);
+            }
+        }
+        // check that all solutions are equivalent
+        // return false if there is any that differs
+        for (var i = 0; i < solutions.length; ++i) {
+            var rotation = solutions[i];
+            for (var dir = 0; dir < 4; ++dir) {
+                rotatedDir = (dir - rotation + 4) % 4;
+                if (cell.cables[dir] != cell.cables[rotatedDir]) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+    
+    // returns true if it could be a solution
+    this.isSolutionCellRotated = function(cell, rotation) {
+        for (var dir = 0; dir < 4; ++dir) {
+            var rotatedDir = (dir - rotation + 4) % 4;
+            // weather the rotated cell has a cable in the direction dir
+            var cableCell = cell.cables[rotatedDir];
+            var n = cell.neighbor(dir);
+            
+            if (n == null && cableCell == true) {
+                // cable towards a border
+                return false;
+            }
+            if (n && n.marked) {
+                // weather the neighbor has a cable towards the cell
+                var oppositeDir = (dir + 2) % 4;
+                var cableNeighbor = n.cables[oppositeDir];
+                if (cableNeighbor != cableCell) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+    
     this.width = 400;
     this.height = 400;
     this.rows = 6;
@@ -102,6 +194,7 @@ game.init = function() {
     this.cells = [];
     this.createGame();
     this.draw();
+    alert('Difficulty: ' + this.getDifficulty());
     
 }
 
@@ -127,7 +220,7 @@ function Cell(row, col, size, game) {
     this.y = size*row;
     this.width = size;
     this.height = size;
-    this.background = get_random_color();
+    //this.background = get_random_color();
     this.game = game;
     // wether there is a cable up right down and left, respectively
     this.Up = 0
@@ -154,7 +247,7 @@ function Cell(row, col, size, game) {
     
     this.addRandomCable = function() {
         var validDirection = false;
-        var direction = undefined;
+        var direction = null;
         if (this.isComplete()) {
             // error: if this gets displayed
             // something is wrong in the algorithm!
@@ -202,15 +295,19 @@ function Cell(row, col, size, game) {
     
     this.context = game.context;
     this.dirty = true;
-    this.draw = function(){
-        if (this.dirty == false) {
+    this.draw = function(force){
+        if (this.dirty == false && !force) {
             return;
         }
         ctx = this.context;
         
         // draw contour and background
         ctx.strokeStyle = 'gray';
-        ctx.fillStyle = 'black';
+        if (this.marked) {
+            ctx.fillStyle = 'blue';
+        } else {
+            ctx.fillStyle = 'black';
+        }
         ctx.linewidth = 1;
         ctx.beginPath();
         ctx.rect(this.x, this.y, this.width, this.height);
@@ -285,7 +382,7 @@ function Cell(row, col, size, game) {
             case this.Right:
                 return this.game.cellAt(row, col+1);
             default:
-                return undefined;
+                return null;
         }
     }
 }
