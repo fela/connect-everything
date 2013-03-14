@@ -97,8 +97,8 @@ game.init = function() {
     
     this.width = 400;
     this.height = 400;
-    this.rows = 4;
-    this.cols = 4;
+    this.rows = 6;
+    this.cols = 6;
     this.cells = [];
     this.createGame();
     this.draw();
@@ -156,7 +156,9 @@ function Cell(row, col, size, game) {
         var validDirection = false;
         var direction = undefined;
         if (this.isComplete()) {
-            alert('cannot add cable to complete cell!!!');
+            // error: if this gets displayed
+            // something is wrong in the algorithm!
+            alert('error: cannot add cable to complete cell!!!');
         }
         while (!validDirection) {
             direction = randomDirection();
@@ -184,9 +186,9 @@ function Cell(row, col, size, game) {
     }
     this.isComplete = function() {
         return this.canAddCable[0] == false &&
-                this.canAddCable[1] == false &&
-                this.canAddCable[2] == false &&
-                this.canAddCable[3] == false
+               this.canAddCable[1] == false &&
+               this.canAddCable[2] == false &&
+               this.canAddCable[3] == false
         /*for (el in this.canAddCable) {
             if (el) {
                 // can add a cable
@@ -236,7 +238,7 @@ function Cell(row, col, size, game) {
     // draws upward cable
     // used as a base to draw cables in all directions
     this.drawCableUp = function() {
-        var lineWidth = 8; // works better if even
+        var lineWidth = this.width/5; // works better if even
         var centerX = this.x + size / 2;
         var centerY = this.y + size / 2;
         ctx = this.context;
