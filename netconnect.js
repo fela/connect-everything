@@ -40,8 +40,19 @@ game.init = function() {
         } else {
             cell.rotateCounterClockwise();
         }
+        game.updateConnectedComponents();
+    }
+    
+    this.updateConnectedComponents = function() {
+        var num = this.connectedComponents();
+        for (var i = 0; i < this.cells.length; ++i) {
+            var cell = this.cells[i];
+            if (cell.color != cell.connectedComponent) {
+                cell.color = cell.connectedComponent;
+                cell.dirty = true;
+            }
+        }
         game.draw();
-        alert('Connected components: ' + game.connectedComponents());
     }
     
     this.cellAt = function(row, col) {
@@ -266,6 +277,15 @@ game.init = function() {
         }
     }
     
+    // TODO: where should I put this actually?
+    this.colors = []
+    this.color = function(num) {
+        if (!this.colors[num]) {
+            this.colors[num] = get_random_color();
+        }
+        return this.colors[num];
+    }
+    
     this.width = 400;
     this.height = 400;
     this.rows = 5;
@@ -276,9 +296,7 @@ game.init = function() {
     } while (this.getDifficulty() == 1);
     var difficulty = this.getDifficulty();
     this.shuffle();
-    this.draw();
-    alert('Difficulty: ' + difficulty);
-    
+    this.updateConnectedComponents();
 }
 
 
@@ -378,6 +396,7 @@ function Cell(row, col, size, game) {
     
     this.context = game.context;
     this.dirty = true;
+    this.color = 0;
     this.draw = function(force){
         if (this.dirty == false && !force) {
             return;
@@ -423,7 +442,7 @@ function Cell(row, col, size, game) {
         var centerY = this.y + size / 2;
         ctx = this.context;
         ctx.lineWidth = lineWidth;
-        ctx.strokeStyle = 'red'
+        ctx.strokeStyle = this.game.color(this.color%2);
         ctx.beginPath();
         // move to top
         ctx.moveTo(centerX, this.y);
