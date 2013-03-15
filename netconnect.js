@@ -41,7 +41,7 @@ game.init = function() {
             cell.rotateCounterClockwise();
         }
         game.draw();
-
+        alert('Connected components: ' + game.connectedComponents());
     }
     
     this.cellAt = function(row, col) {
@@ -50,6 +50,10 @@ game.init = function() {
         }
         var i = row * this.cols + col;
         return this.cells[i];
+    }
+    
+    this.numOfCells = function() {
+        return this.rows * this.cols;
     }
     
     this.draw = function(force) {
@@ -194,6 +198,65 @@ game.init = function() {
             }
         }
         return true;
+    }
+    
+    this.connectedComponents = function() {
+        for (var i = 0; i < this.cells.length; ++i) {
+            this.cells[i].connectedComponent = null;
+        }
+        var unmarkedCells = this.numOfCells();
+        var connectedComponent = 0;
+        while (unmarkedCells > 0) {
+            connectedComponent++;
+            // find first unmarked cell
+            var cell = null;
+            for (var i = 0; i < this.cells.length; ++i) {
+                if (this.cells[i].connectedComponent === null) {
+                    cell = this.cells[i];
+                    break;
+                }
+            }
+            var cc = this.connectedComponent(cell, connectedComponent);
+            unmarkedCells -= cc.length;
+        }
+        return connectedComponent;
+    }
+    
+    this.connectedComponent = function(cell, connectedComponent) {
+        var cells = [cell];
+        cell.connectedComponent = connectedComponent;
+        for (var dir = 0; dir < 4; ++dir) {
+            if (!cell.cables[dir]) {
+                // no cable: do not continue search in this direction
+                continue;
+            }
+            // there is a cable in the direction dir
+            var neighbor = cell.neighbor(dir)
+            if (!neighbor) {
+                // border: do not continue search in this direction
+                continue;
+            }
+            // there is a cable and a neighbor
+            var oppositeDir = (dir + 2) % 4;
+            if (!neighbor.cables[oppositeDir]) {
+                // neighbor not connected:
+                // do not continue search in this direction
+                continue;
+            }
+            if (neighbor.connectedComponent) {
+                // neigbor is already marked
+                if (neighbor.connectedComponent != connectedComponent) {
+                    // should never happen
+                    alert('Error: two diffirent connected components are connected..!!');
+                }
+                continue;
+            }
+            // the neighbor is part of the connected component and unmarked:
+            // recursive call
+            var cc = this.connectedComponent(neighbor, connectedComponent);
+            cells = cells.concat(cc);
+        }
+        return cells;
     }
     
     this.shuffle = function() {
