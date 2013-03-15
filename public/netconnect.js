@@ -475,21 +475,21 @@ function Cell(row, col, size, game) {
         var centerY = this.y + size / 2;
         ctx = this.context;
         ctx.lineWidth = lineWidth;
-        ctx.strokeStyle = this.game.color(this.color%2);
+        ctx.fillStyle = this.game.color(this.color%2);
         ctx.beginPath();
         // move to top
-        ctx.moveTo(centerX, this.y);
-        ctx.lineTo(centerX, centerY+(lineWidth/2));
+        ctx.fillRect(centerX-lineWidth/2, this.y, lineWidth, size/2+lineWidth/2);
+        //ctx.moveTo(centerX, this.y);
+        //ctx.lineTo(centerX, centerY+(lineWidth/2));
         ctx.closePath();
-        ctx.stroke();
+        ctx.fill();
         
         if (unmatched) {
-            ctx.strokeStyle = 'white'
+            ctx.fillStyle = 'white'
             ctx.beginPath();
-            ctx.moveTo(centerX, this.y);
-            ctx.lineTo(centerX, this.y+(lineWidth/2));
+            ctx.fillRect(centerX-lineWidth/2, this.y, lineWidth, lineWidth/2);
             ctx.closePath();
-            ctx.stroke();
+            ctx.fill();
         }
     }
     
