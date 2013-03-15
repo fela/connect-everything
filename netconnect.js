@@ -40,7 +40,13 @@ game.init = function() {
         } else {
             cell.rotateCounterClockwise();
         }
-        game.updateConnectedComponents();
+        game.updateGame();
+    }
+    
+    this.updateGame = function() {
+        this.updateConnectedComponents();
+        this.updateUnmatchedCables();
+        this.draw();
     }
     
     this.updateConnectedComponents = function() {
@@ -52,7 +58,12 @@ game.init = function() {
                 cell.dirty = true;
             }
         }
-        game.draw();
+    }
+    
+    this.updateUnmatchedCables = function() {
+        for (var i = 0; i < this.cells.length; ++i) {
+            this.cells[i].updateUnmatchedCables();
+        }
     }
     
     this.cellAt = function(row, col) {
@@ -296,7 +307,7 @@ game.init = function() {
     } while (this.getDifficulty() == 1);
     var difficulty = this.getDifficulty();
     this.shuffle();
-    this.updateConnectedComponents();
+    this.updateGame();
 }
 
 
@@ -329,6 +340,7 @@ function Cell(row, col, size, game) {
     this.Down = 2
     this.Left = 3
     this.cables = [false,false,false,false];
+    this.unmatchedCables = [false, false, false, false];
     
     // for game creation
     // wether a new cable could be added up, right, down, left, respertively
@@ -393,6 +405,26 @@ function Cell(row, col, size, game) {
         return true;*/
     }
     
+    this.updateUnmatchedCables = function() {
+        for (var dir = 0; dir < 4; ++dir) {
+            var unmatchedCable = (this.cables[dir] && !this.hasOpposingCable(dir));
+            if (unmatchedCable != this.unmatchedCables[dir]) {
+                this.unmatchedCables[dir] = unmatchedCable;
+                this.dirty = true;
+            }
+        }
+    }
+    
+    this.hasOpposingCable = function(dir) {
+        var neighbor = this.neighbor(dir);
+        if (!neighbor) {
+            // border
+            return false;
+        }
+        var opposingDir = (dir + 2) % 4;
+        return neighbor.cables[opposingDir];
+    }
+    
     
     this.context = game.context;
     this.dirty = true;
@@ -422,21 +454,22 @@ function Cell(row, col, size, game) {
     }
     this.drawCables = function() {
         for (var i = 0; i<4; ++i) {
-            if (this.cables[i]) this.drawCable(i);
+            var unmatched = this.unmatchedCables[i];
+            if (this.cables[i]) this.drawCable(i, unmatched);
         }
     }
-    this.drawCable = function(cable) {
+    this.drawCable = function(cable, unmatched) {
         var ctx = this.context;
         ctx.save();
         var times = cable;
         this.rotateCanvasMatrixAroundCenter(times);
-        this.drawCableUp();
+        this.drawCableUp(unmatched);
         ctx.restore();
     }
     
     // draws upward cable
     // used as a base to draw cables in all directions
-    this.drawCableUp = function() {
+    this.drawCableUp = function(unmatched) {
         var lineWidth = this.width/5; // works better if even
         var centerX = this.x + size / 2;
         var centerY = this.y + size / 2;
@@ -449,6 +482,15 @@ function Cell(row, col, size, game) {
         ctx.lineTo(centerX, centerY+(lineWidth/2));
         ctx.closePath();
         ctx.stroke();
+        
+        if (unmatched) {
+            ctx.strokeStyle = 'white'
+            ctx.beginPath();
+            ctx.moveTo(centerX, this.y);
+            ctx.lineTo(centerX, this.y+(lineWidth/2));
+            ctx.closePath();
+            ctx.stroke();
+        }
     }
     
     // helper function
