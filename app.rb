@@ -1,6 +1,6 @@
 require 'sinatra'
 
 get '/' do
-  "Hello World!"
+  send_file 'public/index.html'
 end
 
