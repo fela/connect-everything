@@ -82,9 +82,25 @@ game.init = function() {
         this.updateUnmatchedCables();
         this.draw();
         if (num === 1) {
-            alert('Congratulations, you won the game!');
-            location.reload();
+            this.winGame();
         }
+    }
+    
+    this.winGame = function() {
+        var endTime = new Date().getTime();
+        var diff = (endTime - this.startTime)/1000; // time in seconds
+        var mins = Math.floor(diff / 60);
+        var secs = Math.floor(diff % 60);
+        alert('Congratulations, you won the game in ' + mins + ':' + secs + '!');
+        location.reload();
+    }
+    
+    this.calculateScore = function(time, extraMoves) {
+        var minutes = time/60000;
+        var nCells = this.rows * this.cols;
+        var difficultyScore = nCells*nCells;
+        var timeScore = difficultyScore / minutes;
+        return timeScore;
     }
     
     this.updateConnectedComponents = function() {
@@ -341,6 +357,7 @@ game.init = function() {
     this.rows = 5;
     this.cols = 5;
     this.cells = [];
+    this.startTime = new Date().getTime();
     do {
         this.createGame();
     } while (this.getDifficulty() == 1);
