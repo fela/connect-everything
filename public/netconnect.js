@@ -78,9 +78,13 @@ game.init = function() {
     }
     
     this.updateGame = function() {
-        this.updateConnectedComponents();
+        var num = this.updateConnectedComponents();
         this.updateUnmatchedCables();
         this.draw();
+        if (num === 1) {
+            alert('Congratulations, you won the game!');
+            location.reload();
+        }
     }
     
     this.updateConnectedComponents = function() {
@@ -92,6 +96,7 @@ game.init = function() {
                 cell.dirty = true;
             }
         }
+        return num;
     }
     
     this.updateUnmatchedCables = function() {
@@ -497,7 +502,7 @@ function Cell(row, col, size, game) {
         }
         
         ctx = this.context;
-        ctx.fillStyle = 'red';
+        ctx.fillStyle = 'gray';
         ctx.linewidth = 0;
         ctx.beginPath();
         ctx.rect(this.x, this.y, this.width, this.height);
