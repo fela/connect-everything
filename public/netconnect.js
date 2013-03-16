@@ -474,9 +474,8 @@ function Cell(row, col, size, game) {
             return;
         }
         this.drawBackground();
-        this.drawHover();
-        
         this.drawCables();
+        this.drawHover();
         this.dirty = false;
     }
     this.drawBackground = function() {
@@ -489,7 +488,7 @@ function Cell(row, col, size, game) {
         } else {
             ctx.fillStyle = 'black';
         }
-        ctx.linewidth = 1;
+        ctx.lineWidth = 1;
         ctx.beginPath();
         ctx.rect(this.x, this.y, this.width, this.height);
         ctx.closePath();
@@ -501,15 +500,48 @@ function Cell(row, col, size, game) {
             return;
         }
         
-        ctx = this.context;
-        ctx.fillStyle = 'gray';
-        ctx.linewidth = 0;
+        
+        var lineWidth = this.width/5; // works better if even
+        var centerX = this.x + size / 2;
+        var centerY = this.y + size / 2;
+        ctx.lineWidth = lineWidth/2;
+        ctx.strokeStyle = 'gray';
         ctx.beginPath();
-        ctx.rect(this.x, this.y, this.width, this.height);
-        ctx.closePath();
-        ctx.fill();
+        var begin = null;
+        var end = null;
+        if (this.hover) {
+            // clockwise
+            begin = Math.PI*1.5;
+            end = Math.PI*2;
+        } else {
+            begin = Math.PI*1;
+            end = Math.PI*1.5;
+        }
+        ctx.arc(centerX, centerY, size/3, begin, end, false);
         ctx.stroke();
+        
+        // triangle
+        var y1 = y2 = centerY;
+        var y3 = centerY + lineWidth/2;
+        var x3 = null;
+        if (this.hover) {
+            //clockwise
+            x3 = centerX + size/3;
+        } else {
+            x3 = centerX - size/3;
+        }
+        var x1 = x3 - lineWidth/2;
+        var x2 = x3 + lineWidth/2;
+        ctx.lineWidth = 0;
+        ctx.beginPath();
+        ctx.moveTo(x1, y1);
+        ctx.lineTo(x2, y2);
+        ctx.lineTo(x3, y3);
+        ctx.closePath();
+        ctx.fillStyle = 'gray';
+        ctx.fill();
     }
+    
     this.drawCables = function() {
         for (var i = 0; i<4; ++i) {
             var unmatched = this.unmatchedCables[i];
