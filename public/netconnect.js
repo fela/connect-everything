@@ -24,16 +24,9 @@ game.context = context;
 game.init = function() {
     
     canvas.onclick = function(evt) {
-        var res = getMousePosition(canvas, evt);
-        x = res[0];
-        y = res[1];
-        
-        var row = Math.floor(y / (game.width/game.cols));
-        var col = Math.floor(x / (game.width/game.rows));
-        var cell = game.cellAt(row, col);
-        
-        var clockwise = Math.floor(x / (game.width/game.rows/2))%2 == 1;
-        
+        var cellAndRotation = game.getCellAndRotation(evt);
+        var cell = cellAndRotation.cell;
+        var clockwise = cellAndRotation.clockwise;
         
         if (clockwise) {
             cell.rotateClockwise();
@@ -41,6 +34,47 @@ game.init = function() {
             cell.rotateCounterClockwise();
         }
         game.updateGame();
+    }
+    
+    this.getCellAndRotation = function(event) {
+        var pos = getMousePosition(canvas, event);
+        var x = pos.x;
+        var y = pos.y;
+        var row = Math.floor(y / (game.width/game.cols));
+        var col = Math.floor(x / (game.width/game.rows));
+        var cell = game.cellAt(row, col);
+        
+        var clockwise = Math.floor(x / (game.width/game.rows/2))%2 == 1;
+        return {cell:cell, clockwise:clockwise};
+    }
+    
+    canvas.onmousemove = function(evt) {
+        var cellAndRotation = game.getCellAndRotation(evt);
+        var cell = cellAndRotation.cell;
+        var clockwise = cellAndRotation.clockwise;
+        if (game.mouseOverCell != cell) {
+            if (game.mouseOverCell) {
+                game.mouseOverCell.hover = null;
+                game.mouseOverCell.dirty = true;
+            }
+            game.mouseOverCell = cell;
+        }
+        var oldValue = cell.hover;
+        if (oldValue !== clockwise) {
+            cell.hover = clockwise;
+            cell.dirty = true;
+        }
+        game.draw();
+    }
+    
+    canvas.onmouseout = function() {
+        if (!game.mouseOverCell) {
+            return;
+        }
+        game.mouseOverCell.hover = null;
+        game.mouseOverCell.dirty = true;
+        game.mouseOverCell = null;
+        game.draw();
     }
     
     this.updateGame = function() {
@@ -305,9 +339,10 @@ game.init = function() {
     do {
         this.createGame();
     } while (this.getDifficulty() == 1);
-    var difficulty = this.getDifficulty();
+    this.difficulty = this.getDifficulty();
     this.shuffle();
     this.updateGame();
+    this.mouseOverCell = null;
 }
 
 
@@ -433,6 +468,13 @@ function Cell(row, col, size, game) {
         if (this.dirty == false && !force) {
             return;
         }
+        this.drawBackground();
+        this.drawHover();
+        
+        this.drawCables();
+        this.dirty = false;
+    }
+    this.drawBackground = function() {
         ctx = this.context;
         
         // draw contour and background
@@ -448,9 +490,20 @@ function Cell(row, col, size, game) {
         ctx.closePath();
         ctx.fill();
         ctx.stroke();
+    }
+    this.drawHover = function() {
+        if (this.hover === null || typeof this.hover === 'undefined') {
+            return;
+        }
         
-        this.drawCables();
-        this.dirty = false;
+        ctx = this.context;
+        ctx.fillStyle = 'red';
+        ctx.linewidth = 0;
+        ctx.beginPath();
+        ctx.rect(this.x, this.y, this.width, this.height);
+        ctx.closePath();
+        ctx.fill();
+        ctx.stroke();
     }
     this.drawCables = function() {
         for (var i = 0; i<4; ++i) {
@@ -558,10 +611,10 @@ function getMousePosition(canvas, event) {
         offsetY += element.offsetTop;
       } while ((element = element.offsetParent));
     }
-
+    
     x = event.pageX - offsetX;
     y = event.pageY - offsetY;
-    return [x,y];
+    return {x:x,y:y};
 }
 
 
