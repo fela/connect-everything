@@ -33,6 +33,7 @@ game.init = function() {
         } else {
             cell.rotateCounterClockwise();
         }
+        game.moves--;
         game.updateGame();
     }
     
@@ -91,7 +92,7 @@ game.init = function() {
         var diff = (endTime - this.startTime)/1000; // time in seconds
         var mins = Math.floor(diff / 60);
         var secs = Math.floor(diff % 60);
-        alert('Congratulations, you won the game in ' + mins + ':' + secs + '!');
+        alert('Congratulations, you won the game in ' + mins + ':' + secs + ' and with a move penalty of ' + (-this.moves/2) + '!');
         location.reload();
     }
     
@@ -337,9 +338,10 @@ game.init = function() {
     }
     
     this.shuffle = function() {
+        this.moves = 0;
         for (var i = 0; i < this.cells.length; ++i) {
             var cell = this.cells[i];
-            cell.shuffle();
+            this.moves += cell.shuffle();
         }
     }
     
@@ -650,7 +652,28 @@ function Cell(row, col, size, game) {
         for (var i = 0; i < rotations; ++i) {
             this.rotateClockwise();
         }
-        this.dirty = true;
+        
+        var moves = rotations;
+        if (moves == 3) {
+            moves = 1;
+        }
+        if (this.cables[0] && this.cables[1] && this.cables[2] && this.cables[3]) {
+            moves = 0;
+        }
+        if (!this.cables[0] && !this.cables[1] && !this.cables[2] && !this.cables[3]) {
+            moves = 0;
+        }
+        if (!this.cables[0] && this.cables[1] && !this.cables[2] && this.cables[3]) {
+            moves = moves % 2;
+        }
+        if (this.cables[0] && !this.cables[1] && this.cables[2] && !this.cables[3]) {
+            moves = moves % 2;
+        }
+        
+        if (moves != 0) {
+            this.dirty = true;
+        }
+        return moves;
     }
 }
 
