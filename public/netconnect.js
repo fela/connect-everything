@@ -435,8 +435,18 @@ game.init = function() {
         this.cols = 5;
     }
     
-    this.width = 400;
-    this.height = 400;
+    
+    var width = $(window).width()-10;
+    var height = $(window).height()-50;
+    if (width < height) {
+        height = width;
+    } else {
+        width = height;
+    }
+    canvas.setAttribute('width', width);
+    canvas.setAttribute('height', height);
+    this.width = width;
+    this.height = height;
     this.cells = [];
     this.startTime = new Date().getTime();
     do {
