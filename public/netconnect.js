@@ -138,18 +138,30 @@ game.init = function() {
         var diff = (endTime - this.startTime)/1000; // time in seconds
         var mins = Math.floor(diff / 60);
         var secs = Math.floor(diff % 60);
-        alert('Congratulations, you won the game in ' + mins + ':' + secs + ' and with a move penalty of ' + (-this.moves/2) + '. Your score is '+this.calculateScore(diff)+'!');
+        var secsStr = '' + secs;
+        if (secs < 10) {
+            secsStr = '0' + secs;
+        }
+        var timeStamp = '' + mins + ':' + secsStr;
+        alert('Congratulations, you won the game in ' + timeStamp + ' and with a move penalty of ' + (-this.moves/2) + '. Your score is '+this.calculateScore(diff)+'!');
         location.reload();
     }
     
     this.calculateScore = function(time) {
-        var minutes = time / 60;
         var nCells = this.rows * this.cols;
-        var difficultyScore = nCells*nCells;
-        var timeScore = difficultyScore / minutes;
+        var difficultyScore = Math.pow(nCells, 2.5);
+        
+        var minutes = time / 60;
+        var timeScore = 1 / minutes;
+        
         var movePenalty = -this.moves/2;
         var moveScore = (Math.pow(2/3, Math.pow(movePenalty, 0.5)));
-        return Math.floor(Math.sqrt(timeScore*moveScore));
+        
+        // combine the the scores
+        var multFactor = 1/4;
+        var score = multFactor * difficultyScore * timeScore * moveScore;
+        // the square root is to decrease unneded differences between low and high scores
+        return Math.floor(Math.sqrt(score));
     }
     
     this.updateConnectedComponents = function() {
@@ -398,7 +410,7 @@ game.init = function() {
         var init = 0.65;
         var h = (golden_ratio_conjugate*num) + init;
         h -= Math.floor(h);
-        return HSLtoRGB([h, 0.95, 0.5]);
+        return HSLtoRGB([h, 0.95, 0.55]);
     }
     
     // TODO: where should I put this actually?
@@ -570,9 +582,9 @@ function Cell(row, col, size, game) {
         // draw contour and background
         ctx.strokeStyle = 'gray';
         if (this.marked) {
-            ctx.fillStyle = 'black';
+            ctx.fillStyle = 'rgb(100,100,100)';
         } else {
-            ctx.fillStyle = 'rgb(30,30,30)';
+            ctx.fillStyle = 'black';
         }
         ctx.lineWidth = 1;
         ctx.beginPath();
