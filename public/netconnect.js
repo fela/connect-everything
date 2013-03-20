@@ -1,14 +1,49 @@
 var canvas = document.getElementById('gamecanvas');
 var context = canvas.getContext('2d');
 
-function get_random_color() {
-    var letters = '0123456789ABCDEF'.split('');
-    var color = '#';
-    for (var i = 0; i < 6; i++ ) {
-        color += letters[Math.round(Math.random() * 15)];
+
+
+HSLtoRGB = function (hsl) {
+    // in JS 1.7 use: var [h, s, l] = hsl;
+    var h = hsl[0],
+        s = hsl[1],
+        l = hsl[2],
+
+    r, g, b,
+
+    hue2rgb = function (p, q, t){
+        if (t < 0) {
+            t += 1;
+        }
+        if (t > 1) {
+            t -= 1;
+        }
+        if (t < 1/6) {
+            return p + (q - p) * 6 * t;
+        }
+        if (t < 1/2) {
+            return q;
+        }
+        if (t < 2/3) {
+            return p + (q - p) * (2/3 - t) * 6;
+        }
+        return p;
+    };
+
+    if (s === 0) {
+        r = g = b = l; // achromatic
+    } else {
+        var
+        q = l < 0.5 ? l * (1 + s) : l + s - l * s,
+        p = 2 * l - q;
+        r = hue2rgb(p, q, h + 1/3);
+        g = hue2rgb(p, q, h);
+        b = hue2rgb(p, q, h - 1/3);
     }
-    return color;
-}
+    var res = [r * 0xFF, g * 0xFF, b * 0xFF];
+    
+    return "rgb(" + [Math.floor(res[0]), Math.floor(res[1]), Math.floor(res[2])].join(",") + ")";
+};
 
 function randomDirection() {
     return Math.floor(Math.random()*4);
@@ -53,6 +88,9 @@ game.init = function() {
         var cellAndRotation = game.getCellAndRotation(evt);
         var cell = cellAndRotation.cell;
         var clockwise = cellAndRotation.clockwise;
+        if (!cell) {
+            return;
+        }
         if (game.mouseOverCell != cell) {
             if (game.mouseOverCell) {
                 game.mouseOverCell.hover = null;
@@ -76,6 +114,14 @@ game.init = function() {
         game.mouseOverCell.dirty = true;
         game.mouseOverCell = null;
         game.draw();
+    }
+    
+    window.onkeydown = function() {
+        var cell = game.mouseOverCell;
+        if (cell) {
+            cell.marked = !cell.marked;
+            cell.draw(true);
+        }
     }
     
     this.updateGame = function() {
@@ -347,11 +393,19 @@ game.init = function() {
         }
     }
     
+    this.getRandomColor = function(num) {
+        var golden_ratio_conjugate = 0.618033988749895;
+        var init = 0.65;
+        var h = (golden_ratio_conjugate*num) + init;
+        h -= Math.floor(h);
+        return HSLtoRGB([h, 0.95, 0.5]);
+    }
+    
     // TODO: where should I put this actually?
     this.colors = []
     this.color = function(num) {
         if (!this.colors[num]) {
-            this.colors[num] = get_random_color();
+            this.colors[num] = this.getRandomColor(num);
         }
         return this.colors[num];
     }
@@ -516,9 +570,9 @@ function Cell(row, col, size, game) {
         // draw contour and background
         ctx.strokeStyle = 'gray';
         if (this.marked) {
-            ctx.fillStyle = 'blue';
-        } else {
             ctx.fillStyle = 'black';
+        } else {
+            ctx.fillStyle = 'rgb(30,30,30)';
         }
         ctx.lineWidth = 1;
         ctx.beginPath();
@@ -597,7 +651,7 @@ function Cell(row, col, size, game) {
         var centerY = this.y + size / 2;
         ctx = this.context;
         ctx.lineWidth = lineWidth;
-        ctx.fillStyle = this.game.color(this.color%2);
+        ctx.fillStyle = this.game.color(this.color);
         ctx.beginPath();
         // move to top
         ctx.fillRect(centerX-lineWidth/2, this.y, lineWidth, size/2+lineWidth/2);
