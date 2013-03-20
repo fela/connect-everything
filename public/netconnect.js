@@ -92,16 +92,18 @@ game.init = function() {
         var diff = (endTime - this.startTime)/1000; // time in seconds
         var mins = Math.floor(diff / 60);
         var secs = Math.floor(diff % 60);
-        alert('Congratulations, you won the game in ' + mins + ':' + secs + ' and with a move penalty of ' + (-this.moves/2) + '!');
+        alert('Congratulations, you won the game in ' + mins + ':' + secs + ' and with a move penalty of ' + (-this.moves/2) + '. Your score is '+this.calculateScore(diff)+'!');
         location.reload();
     }
     
-    this.calculateScore = function(time, extraMoves) {
-        var minutes = time/60000;
+    this.calculateScore = function(time) {
+        var minutes = time / 60;
         var nCells = this.rows * this.cols;
         var difficultyScore = nCells*nCells;
         var timeScore = difficultyScore / minutes;
-        return timeScore;
+        var movePenalty = -this.moves/2;
+        var moveScore = (Math.pow(2/3, Math.pow(movePenalty, 0.5)));
+        return Math.floor(Math.sqrt(timeScore*moveScore));
     }
     
     this.updateConnectedComponents = function() {
@@ -354,10 +356,21 @@ game.init = function() {
         return this.colors[num];
     }
     
+    var difficulty = window.location.search.replace( "?", "" );
+    if (difficulty == 'medium') {
+        this.rows = 7;
+        this.cols = 7;
+    } else if (difficulty == 'hard'){
+        this.rows = 9;
+        this.cols = 9;
+    } else {
+        // default easy
+        this.rows = 5;
+        this.cols = 5;
+    }
+    
     this.width = 400;
     this.height = 400;
-    this.rows = 5;
-    this.cols = 5;
     this.cells = [];
     this.startTime = new Date().getTime();
     do {
