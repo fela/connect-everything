@@ -114,6 +114,7 @@ game.init = function() {
         game.mouseOverCell.dirty = true;
         game.mouseOverCell = null;
         game.draw();
+        console.log('mouseout');
     }
     
     window.onkeydown = function() {
@@ -143,6 +144,8 @@ game.init = function() {
             secsStr = '0' + secs;
         }
         var timeStamp = '' + mins + ':' + secsStr;
+        //console.log(this.getDifficulty());
+        //console.log('aaaaaaaaaaaaaaa');
         alert('Congratulations, you won the game in ' + timeStamp + ' and with a move penalty of ' + (-this.moves/2) + '. Your score is '+this.calculateScore(diff)+'!');
         location.reload();
     }
@@ -155,7 +158,7 @@ game.init = function() {
         var timeScore = 1 / minutes;
         
         var movePenalty = -this.moves/2;
-        var moveScore = (Math.pow(2/3, Math.pow(movePenalty, 0.5)));
+        var moveScore = Math.pow(2/3, Math.sqrt(movePenalty));
         
         // combine the the scores
         var multFactor = 1/4;
@@ -242,10 +245,41 @@ game.init = function() {
         }
     }
     
+    this.isGameOk = function() {
+        var diff = this.getDifficulty();
+        if (diff[diff.length-1] == 1) {
+            return false; // unsolvable by easy methods
+        }
+        
+        var expectedEfford = 0;
+        var maximumDiff = 0;
+        for (var i = 0; i < diff.length; ++i) {
+            expectedEfford += Math.pow(diff[i], 5);
+            if (diff[i] > maximumDiff) {
+                maximumDiff = diff[i];
+            }
+        }
+        
+        console.log(diff);
+        console.log(expectedEfford);
+        console.log(maximumDiff);
+        
+        /*if (test) {
+            return true;
+        } else {
+            return false;
+        }*/
+        return true;
+    }
+    
     // there might be multiple solutions if the difficulty is equal to 1
     this.getDifficulty = function() {
-        var difficulty = 0;
+        var difficulty = [];
         var unmarkedCells = this.rows * this.cols;
+        
+        for (var i = 0; i < this.cells.length; ++i) {
+            this.cells[i].marked = false;
+        }
         while (unmarkedCells > 0) {
             var prevUnmarkedCells = unmarkedCells;
             var toBeMarked = [];
@@ -265,19 +299,16 @@ game.init = function() {
             }
             var newlyMarked = prevUnmarkedCells - unmarkedCells;
             if (newlyMarked == 0) {
-                difficulty = 1;
+                difficulty.push(1);
                 break;
             }
             var newDifficulty = 1 - newlyMarked / prevUnmarkedCells;
-            if (newDifficulty > difficulty) {
-                difficulty = newDifficulty;
-            }
-            this.draw(true);
-            //alert(newlyMarked+' diff:'+newDifficulty);
+            difficulty.push(newDifficulty);
         }
-        for (var i in this.cells) {
+        for (var i = 0; i < this.cells.length; ++i) {
             this.cells[i].marked = false;
         }
+        
         return difficulty;
     }
     
@@ -451,8 +482,7 @@ game.init = function() {
     this.startTime = new Date().getTime();
     do {
         this.createGame();
-    } while (this.getDifficulty() == 1);
-    this.difficulty = this.getDifficulty();
+    } while (!this.isGameOk());
     this.shuffle();
     this.updateGame();
     this.mouseOverCell = null;
@@ -538,6 +568,8 @@ function Cell(row, col, size, game) {
             }
         }
     }
+    
+    // for game construction
     this.isComplete = function() {
         return this.canAddCable[0] == false &&
                this.canAddCable[1] == false &&
@@ -551,6 +583,18 @@ function Cell(row, col, size, game) {
         }
         // cannot add any cable
         return true;*/
+    }
+    
+    this.numOfCables = function() {
+        var num = 0;
+        for (var i = 0; i < 4; ++i) {
+            if (this.cables[i]) ++num;
+        }
+        return num;
+    }
+    
+    this.isEndPoint = function() {
+        return this.numOfCables() == 1;
     }
     
     this.updateUnmatchedCables = function() {
