@@ -260,16 +260,34 @@ game.init = function() {
             }
         }
         
+        expectedEfford /= diff.length;
+        expectedEfford *= 100; // more readable value
+        
         console.log(diff);
         console.log(expectedEfford);
         console.log(maximumDiff);
         
-        /*if (test) {
+        var minVal;
+        var maxVal;
+        var nCells = this.rows * this.cols;
+        if (nCells < 35) {
+            // easy
+            minVal = 1;
+            maxVal = 5;
+        } else if (nCells < 70) {
+            // medium
+            minVal = 5;
+            maxVal = 20;
+        } else {
+            // difficult
+            minVal = 8;
+            maxVal = 20;
+        }
+        if (expectedEfford > minVal && expectedEfford < maxVal) {
             return true;
         } else {
             return false;
-        }*/
-        return true;
+        }
     }
     
     // there might be multiple solutions if the difficulty is equal to 1
