@@ -380,7 +380,7 @@ game.init = function() {
                 }
             }
             // special case: two terminal cells cannot be connected
-            if (n && cableCell && cell.isTerminal() && n.isTerminal()){
+            if (n && cableCell && cell.isEndPoint() && n.isEndPoint()){
                 return false;
             }
         }
@@ -669,7 +669,7 @@ function Cell(row, col, size, game) {
         if (this.hover === null || typeof this.hover === 'undefined') {
             return;
         }
-        
+        var ctx = this.context;
         
         var lineWidth = this.width/5; // works better if even
         var centerX = this.x + size / 2;
@@ -717,7 +717,22 @@ function Cell(row, col, size, game) {
             var unmatched = this.unmatchedCables[i];
             if (this.cables[i]) this.drawCable(i, unmatched);
         }
+        if (this.isEndPoint()) {
+            this.drawEndPoint();
+        }
     }
+    
+    this.drawEndPoint = function() {
+        var ctx = this.context;
+        ctx.fillStyle = this.game.color(this.color);
+        ctx.beginPath();
+        var centerX = this.x + size / 2;
+        var centerY = this.y + size / 2;
+        ctx.arc(centerX, centerY, size/5, 0, 2*Math.PI);
+        ctx.closePath();
+        ctx.fill();
+    }
+    
     this.drawCable = function(cable, unmatched) {
         var ctx = this.context;
         ctx.save();
@@ -789,15 +804,7 @@ function Cell(row, col, size, game) {
                 return null;
         }
     }
-    this.isTerminal = function() {
-        var numCables = 0;
-        for (var i = 0; i < this.cables.length; ++i) {
-            if (this.cables[i]) {
-                numCables++;
-            }
-        }
-        return numCables == 1;
-    }
+    
     this.shuffle = function() {
         var rotations = Math.floor(Math.random()*4);
         for (var i = 0; i < rotations; ++i) {
