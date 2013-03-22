@@ -1,4 +1,5 @@
 require 'sinatra'
+require 'haml'
 require 'data_mapper'
  
 class Item
@@ -16,6 +17,12 @@ configure do
 end
 
 get '/' do
-  send_file 'public/index.html'
+  haml :index
 end
 
+get '/submitscore' do
+  @score = 222.2121;
+  @time = '1:02';
+  @penalty = 4;
+  haml :submitscore
+end

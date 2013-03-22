@@ -52,6 +52,7 @@ GEM
     do_postgres (0.10.12)
       data_objects (= 0.10.12)
     fastercsv (1.5.5)
+    haml (3.1.7)
     json (1.7.7)
     json_pure (1.7.7)
     multi_json (1.7.1)
@@ -73,5 +74,6 @@ PLATFORMS
 DEPENDENCIES
   datamapper
   dm-postgres-adapter
+  haml
   pg
   sinatra
