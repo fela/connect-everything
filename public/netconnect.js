@@ -489,6 +489,32 @@ game.init = function() {
         return HSLtoRGB([h, 0.95, 0.55]);
     }
     
+    this.updateWidthAndHeight = function() {
+         var width = $(window).width()-10;
+        var height = $(window).height()-50;
+        if (width < height) {
+            height = width;
+        } else {
+            width = height;
+        }
+        canvas.setAttribute('width', width);
+        canvas.setAttribute('height', height);
+        this.width = width;
+        this.height = height;
+    }
+    
+    
+    this.resize = function() {
+        this.updateWidthAndHeight();
+        var size = this.width / this.cols;
+        for (var i = 0; i < this.cells.length; ++i) {
+            this.cells[i].size = size;
+        }
+        this.draw(true);
+    }
+    
+    
+    
     // TODO: where should I put this actually?
     this.colors = []
     this.color = function(num) {
@@ -513,18 +539,9 @@ game.init = function() {
     }
     this.difficulty = difficulty;
     
-    
-    var width = $(window).width()-10;
-    var height = $(window).height()-50;
-    if (width < height) {
-        height = width;
-    } else {
-        width = height;
-    }
-    canvas.setAttribute('width', width);
-    canvas.setAttribute('height', height);
-    this.width = width;
-    this.height = height;
+ 
+   
+    this.updateWidthAndHeight();
     this.cells = [];
     this.startTime = new Date().getTime();
     do {
@@ -533,6 +550,9 @@ game.init = function() {
     this.shuffle();
     this.updateGame();
     this.mouseOverCell = null;
+    var game = this;
+    $(document).ready($(window).resize(function(){game.resize()}));
+    
 }
 
 
@@ -553,10 +573,7 @@ function Cell(row, col, size, game) {
     // default values, might be overridden
     this.row = row;
     this.col = col;
-    this.x = size*col;
-    this.y = size*row;
-    this.width = size;
-    this.height = size;
+    this.size = size;
     //this.background = get_random_color();
     this.game = game;
     // wether there is a cable up right down and left, respectively
@@ -581,6 +598,13 @@ function Cell(row, col, size, game) {
     }
     if (this.col == game.cols-1) {
         this.canAddCable[this.Right] = false;
+    }
+    
+    this.x = function() {
+        return this.size*col;
+    }
+    this.y = function() {
+        return this.size*row;
     }
     
     this.addRandomCable = function() {
@@ -689,7 +713,7 @@ function Cell(row, col, size, game) {
         }
         ctx.lineWidth = 1;
         ctx.beginPath();
-        ctx.rect(this.x, this.y, this.width, this.height);
+        ctx.rect(this.x(), this.y(), this.size, this.size);
         ctx.closePath();
         ctx.fill();
         ctx.stroke();
@@ -700,9 +724,9 @@ function Cell(row, col, size, game) {
         }
         var ctx = this.context;
         
-        var lineWidth = this.width/5; // works better if even
-        var centerX = this.x + size / 2;
-        var centerY = this.y + size / 2;
+        var lineWidth = this.size/5; // works better if even
+        var centerX = this.x() + this.size / 2;
+        var centerY = this.y() + this.size / 2;
         ctx.lineWidth = lineWidth/2;
         ctx.strokeStyle = 'gray';
         ctx.beginPath();
@@ -716,7 +740,7 @@ function Cell(row, col, size, game) {
             begin = Math.PI*1;
             end = Math.PI*1.5;
         }
-        ctx.arc(centerX, centerY, size/3, begin, end, false);
+        ctx.arc(centerX, centerY, this.size/3, begin, end, false);
         ctx.stroke();
         
         // triangle
@@ -725,9 +749,9 @@ function Cell(row, col, size, game) {
         var x3 = null;
         if (this.hover) {
             //clockwise
-            x3 = centerX + size/3;
+            x3 = centerX + this.size/3;
         } else {
-            x3 = centerX - size/3;
+            x3 = centerX - this.size/3;
         }
         var x1 = x3 - lineWidth/2;
         var x2 = x3 + lineWidth/2;
@@ -755,9 +779,9 @@ function Cell(row, col, size, game) {
         var ctx = this.context;
         ctx.fillStyle = this.game.color(this.color);
         ctx.beginPath();
-        var centerX = this.x + size / 2;
-        var centerY = this.y + size / 2;
-        ctx.arc(centerX, centerY, size/5, 0, 2*Math.PI);
+        var centerX = this.x() + this.size / 2;
+        var centerY = this.y() + this.size / 2;
+        ctx.arc(centerX, centerY, this.size/5, 0, 2*Math.PI);
         ctx.closePath();
         ctx.fill();
     }
@@ -774,15 +798,15 @@ function Cell(row, col, size, game) {
     // draws upward cable
     // used as a base to draw cables in all directions
     this.drawCableUp = function(unmatched) {
-        var lineWidth = this.width/5; // works better if even
-        var centerX = this.x + size / 2;
-        var centerY = this.y + size / 2;
+        var lineWidth = this.size/5; // works better if even
+        var centerX = this.x() + this.size / 2;
+        var centerY = this.y() + this.size / 2;
         ctx = this.context;
         ctx.lineWidth = lineWidth;
         ctx.fillStyle = this.game.color(this.color);
         ctx.beginPath();
         // move to top
-        ctx.fillRect(centerX-lineWidth/2, this.y, lineWidth, size/2+lineWidth/2);
+        ctx.fillRect(centerX-lineWidth/2, this.y(), lineWidth, this.size/2+lineWidth/2);
         //ctx.moveTo(centerX, this.y);
         //ctx.lineTo(centerX, centerY+(lineWidth/2));
         ctx.closePath();
@@ -791,7 +815,7 @@ function Cell(row, col, size, game) {
         if (unmatched) {
             ctx.fillStyle = 'white'
             ctx.beginPath();
-            ctx.fillRect(centerX-lineWidth/2, this.y, lineWidth, lineWidth/2);
+            ctx.fillRect(centerX-lineWidth/2, this.y(), lineWidth, lineWidth/2);
             ctx.closePath();
             ctx.fill();
         }
@@ -802,8 +826,8 @@ function Cell(row, col, size, game) {
     this.rotateCanvasMatrixAroundCenter = function(times) {
         var ctx = this.context;
         var rotation = times*Math.PI/2.0;
-        var centerX = this.x + size / 2;
-        var centerY = this.y + size / 2;
+        var centerX = this.x() + this.size / 2;
+        var centerY = this.y() + this.size / 2;
         ctx.translate(centerX, centerY);
         ctx.rotate(rotation);
         ctx.translate(-centerX, -centerY);
