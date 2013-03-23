@@ -48,6 +48,12 @@ tr.newscore {
 #submitscore {
     margin-top: 100px;
 }
+#container {
+    text-align: center;
+}
+.text {
+    text-align: left;
+}
 
 .pointsnumber {
     font-size: 25px;
