@@ -1,0 +1,27 @@
+%table
+  %tr
+    %th
+    %th
+      name
+    %th
+      time
+    %th
+      moves
+    %th
+      level
+    %th
+      score
+  - @scores.each_with_index do |s, i|
+    %tr
+      %td
+        = i+1
+      %td
+        = s.name
+      %td
+        = s.time
+      %td
+        = s.moves
+      %td
+        = s.difficulty
+      %td.points
+        = s.points.round(1)

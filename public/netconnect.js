@@ -45,6 +45,30 @@ HSLtoRGB = function (hsl) {
     return "rgb(" + [Math.floor(res[0]), Math.floor(res[1]), Math.floor(res[2])].join(",") + ")";
 };
 
+function postToUrl(path, params, method) {
+    method = method || "post"; // Set method to post by default, if not specified.
+
+    // The rest of this code assumes you are not using a library.
+    // It can be made less wordy if you use one.
+    var form = document.createElement("form");
+    form.setAttribute("method", method);
+    form.setAttribute("action", path);
+
+    for(var key in params) {
+        if(params.hasOwnProperty(key)) {
+            var hiddenField = document.createElement("input");
+            hiddenField.setAttribute("type", "hidden");
+            hiddenField.setAttribute("name", key);
+            hiddenField.setAttribute("value", params[key]);
+
+            form.appendChild(hiddenField);
+         }
+    }
+
+    document.body.appendChild(form);
+    form.submit();
+}
+
 function randomDirection() {
     return Math.floor(Math.random()*4);
 }
@@ -144,10 +168,13 @@ game.init = function() {
             secsStr = '0' + secs;
         }
         var timeStamp = '' + mins + ':' + secsStr;
+        var moves = -this.moves/2;
+        var points = this.calculateScore(diff);
         //console.log(this.getDifficulty());
         //console.log('aaaaaaaaaaaaaaa');
-        alert('Congratulations, you won the game in ' + timeStamp + ' and with a move penalty of ' + (-this.moves/2) + '. Your score is '+this.calculateScore(diff)+'!');
-        location.reload();
+        //alert('Congratulations, you won the game in ' + timeStamp + ' and with a move penalty of ' + (-this.moves/2) + '. Your score is '+this.calculateScore(diff)+'!');
+        postToUrl('/gamewon', {difficulty: this.difficulty, time: timeStamp, moves: moves, points: points})
+        //location.reload();
     }
     
     this.calculateScore = function(time) {
@@ -164,7 +191,7 @@ game.init = function() {
         var multFactor = 1/4;
         var score = multFactor * difficultyScore * timeScore * moveScore;
         // the square root is to decrease unneded differences between low and high scores
-        return Math.floor(Math.sqrt(score));
+        return Math.sqrt(score);
     }
     
     this.updateConnectedComponents = function() {
@@ -480,9 +507,11 @@ game.init = function() {
         this.cols = 9;
     } else {
         // default easy
+        difficulty = 'easy'
         this.rows = 5;
         this.cols = 5;
     }
+    this.difficulty = difficulty;
     
     
     var width = $(window).width()-10;
