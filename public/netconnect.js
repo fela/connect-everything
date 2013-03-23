@@ -87,6 +87,10 @@ game.init = function() {
         var cell = cellAndRotation.cell;
         var clockwise = cellAndRotation.clockwise;
         
+        if (!cell) {
+            return;
+        }
+        
         if (clockwise) {
             cell.rotateClockwise();
         } else {
@@ -95,6 +99,8 @@ game.init = function() {
         game.moves--;
         game.updateGame();
     }
+    canvas.onselectstart = function() {return false;}
+    
     
     this.getCellAndRotation = function(event) {
         var pos = getMousePosition(canvas, event);
@@ -482,7 +488,7 @@ game.init = function() {
     }
     
     this.getRandomColor = function(num) {
-        var oknums = [1, 16, 12, 15];
+        var oknums = [1, 12, 16   , 15];
         num = oknums[num % oknums.length];
         var golden_ratio_conjugate = 0.618033988749895;
         var init = 0.65;
