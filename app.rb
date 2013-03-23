@@ -60,8 +60,11 @@ helpers do
 end  
 
 get '/' do
-  p Score.all
   haml :index
+end
+
+get '/rules' do
+  haml :rules
 end
 
 post '/gamewon' do

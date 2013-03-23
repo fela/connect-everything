@@ -14,7 +14,7 @@ table {
 }
 
 th {
-    color: #0066CC;
+    color: #00647D;
     padding: 0 10px;
 }
 
@@ -33,6 +33,10 @@ td.name {
 
 td.pos {
     text-align: right;
+}
+
+tr.newscore {
+    background: white;
 }
 
 #hiscore {

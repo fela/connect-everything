@@ -1,6 +1,15 @@
 %canvas{id: 'gamecanvas', height: 0, width: 0}
-%br/
-%a{:href => "./"} easy
-%a{:href => "./?medium"} medium
-%a{:href => "./?hard"} hard
+%br
+play
+= succeed ',' do
+  %a{:href => '/?easy'} easy
+%a{:href => '/?medium'} medium
+or
+%a{:href => '/?hard'} hard
+|
+%a{:href => 'rules'} rules
+|
+%a{:href => 'hiscores'} hiscores
+
+
 %script{:src => "./netconnect.js"}
