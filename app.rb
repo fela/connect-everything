@@ -36,10 +36,10 @@ class Item
 end
  
 configure do
-  DataMapper.setup(:default, 'postgres://fela:@localhost/net-connect')
+  DataMapper.setup(:default, ENV['DATABASE_URL'] || 'postgres://fela:@localhost/net-connect')
   DataMapper.finalize
   #DataMapper.auto_upgrade!
-  #DataMapper.auto_migrate!
+  DataMapper.auto_migrate!
   DataMapper::Model.raise_on_save_failure = true
 
   #score = Score.create(name: "fela", time: '3:03', moves: 1, difficulty: 'easy', score: 13.33)
