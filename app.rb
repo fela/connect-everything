@@ -45,6 +45,8 @@ configure do
   #score = Score.create(name: "fela", time: '3:03', moves: 1, difficulty: 'easy', score: 13.33)
   #score = Score.create(name: 'fela', time: '3:03', moves: 1, difficulty: 'easy', points: 13.33)
   #score.save
+  
+  enable :sessions
 end
 
 helpers do  
@@ -58,14 +60,15 @@ helpers do
 end  
 
 get '/' do
-  p Score.all;
+  p Score.all
   haml :index
 end
 
 post '/gamewon' do
   # params should contain: difficulty, time, moves and the score
   @params = params
-  haml :submitscore#, locals: {score: score}
+  @name = session[:name]
+  haml :submitscore
 end
 
 def get_or_post(path, opts={}, &block)
@@ -74,11 +77,19 @@ def get_or_post(path, opts={}, &block)
 end
 
 post '/submitscore' do
-  name = h params[:name][0...16]; # limit max size
-  time = h params[:time];
+  name = h params[:name][0...16] # limit max size
+  if (name.size < 1)
+    show_hiscores
+    return
+  end
+  
+  time = h params[:time]
   moves = (h params[:moves]).to_i
   difficulty = h params[:difficulty]
   points = params[:points]
+  
+  session[:name] = name
+  
   @newScore = Score.create(name: name, time: time, moves: moves, difficulty: difficulty, points: points)
   @newScore.save
   @newScore.update_best_score

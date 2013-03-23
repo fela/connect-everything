@@ -16,6 +16,15 @@
     %input{name: 'time', type: 'hidden', value: @params[:time]}
     %input{name: 'difficulty', type: 'hidden', value: @params[:difficulty]}
     %input{name: 'points', type: 'hidden', value: @params[:points]}
-    %input{name: 'name', type: 'text', placeholder: 'Enter your name...'}
+    - if @name && @name.size > 0
+      %input{id: 'nameinput', name: 'name', type: 'text', value: @name, placeholder: 'Enter your name...'}
+    - else
+      %input{id: 'nameinput', name: 'name', type: 'text', placeholder: 'Enter your name...'}
     %br
     %input.btn{type: 'submit'}
+:javascript
+  var text_input = document.getElementById ('nameinput');
+  if (text_input.value != '') {
+    text_input.focus ();
+    text_input.select ();
+  }
