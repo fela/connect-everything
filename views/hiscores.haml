@@ -23,4 +23,11 @@
         %td #{s.difficulty}
         %td.points
           = s.points.round(1)
-%a{href: '/'} new game
+
+%br
+play again:
+= succeed ',' do
+  %a{:href => '/?easy'} easy
+%a{:href => '/?medium'} medium
+or
+%a{:href => '/?hard'} hard
