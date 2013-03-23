@@ -482,11 +482,13 @@ game.init = function() {
     }
     
     this.getRandomColor = function(num) {
+        var oknums = [1, 16, 12, 15];
+        num = oknums[num % oknums.length];
         var golden_ratio_conjugate = 0.618033988749895;
         var init = 0.65;
         var h = (golden_ratio_conjugate*num) + init;
         h -= Math.floor(h);
-        return HSLtoRGB([h, 0.95, 0.55]);
+        return HSLtoRGB([h, 0.99, 0.42]);
     }
     
     this.updateWidthAndHeight = function() {
