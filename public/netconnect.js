@@ -79,6 +79,7 @@ Array.prototype.random = function() {
 }
 
 var game = {};
+game.Border = 1/3; // as a proportion of one cell
 game.context = context;
 game.init = function() {
     
@@ -104,13 +105,15 @@ game.init = function() {
     
     this.getCellAndRotation = function(event) {
         var pos = getMousePosition(canvas, event);
-        var x = pos.x;
-        var y = pos.y;
-        var row = Math.floor(y / (game.width/game.cols));
-        var col = Math.floor(x / (game.width/game.rows));
+        var size = this.calculateSize(); // cellsize
+        var x = pos.x-this.Border*size;
+        var y = pos.y-this.Border*size;
+        var size = this.calculateSize(); // cellsize
+        var row = Math.floor(y/size);
+        var col = Math.floor(x/size);
         var cell = game.cellAt(row, col);
         
-        var clockwise = Math.floor(x / (game.width/game.rows/2))%2 == 1;
+        var clockwise = Math.floor(x / (size/2))%2 == 1;
         return {cell:cell, clockwise:clockwise};
     }
     
@@ -119,6 +122,7 @@ game.init = function() {
         var cell = cellAndRotation.cell;
         var clockwise = cellAndRotation.clockwise;
         if (!cell) {
+            game.mouseout();
             return;
         }
         if (game.mouseOverCell != cell) {
@@ -137,14 +141,7 @@ game.init = function() {
     }
     
     canvas.onmouseout = function() {
-        if (!game.mouseOverCell) {
-            return;
-        }
-        game.mouseOverCell.hover = null;
-        game.mouseOverCell.dirty = true;
-        game.mouseOverCell = null;
-        game.draw();
-        console.log('mouseout');
+        game.mouseout();
     }
     
     window.onkeydown = function() {
@@ -153,6 +150,18 @@ game.init = function() {
             cell.marked = !cell.marked;
             cell.draw(true);
         }
+    }
+    
+    this.mouseout = function() {
+        if (!game.mouseOverCell) {
+            return;
+        }
+        
+        game.mouseOverCell.hover = null;
+        game.mouseOverCell.dirty = true;
+        game.mouseOverCell = null;
+        game.draw();
+        console.log('mouseout');
     }
     
     this.updateGame = function() {
@@ -239,7 +248,7 @@ game.init = function() {
     this.createGame = function() {
         // create empty cells
         this.cells = [];
-        var size = this.width / this.rows;
+        var size = this.calculateSize();
         for (var r = 0; r < this.rows; ++r) {
             for (var c = 0; c < this.cols; ++c) {
                 var e = new Cell(r, c, size, this);
@@ -498,7 +507,7 @@ game.init = function() {
     }
     
     this.updateWidthAndHeight = function() {
-         var width = $(window).width()-10;
+        var width = $(window).width()-10;
         var height = $(window).height()-50;
         if (width < height) {
             height = width;
@@ -511,10 +520,14 @@ game.init = function() {
         this.height = height;
     }
     
+    this.calculateSize = function() {
+        return this.width / (this.cols+this.Border*2);
+    }
+    
     
     this.resize = function() {
         this.updateWidthAndHeight();
-        var size = this.width / this.cols;
+        var size = this.calculateSize();
         for (var i = 0; i < this.cells.length; ++i) {
             this.cells[i].size = size;
         }
@@ -609,10 +622,10 @@ function Cell(row, col, size, game) {
     }
     
     this.x = function() {
-        return this.size*col;
+        return this.size*(this.col+game.Border);
     }
     this.y = function() {
-        return this.size*row;
+        return this.size*(this.row+game.Border);
     }
     
     this.addRandomCable = function() {
