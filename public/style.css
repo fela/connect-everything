@@ -7,3 +7,37 @@ canvas {
     background-color: black;
     margin-top: 5px;
 }
+
+table {
+    margin: 0 auto;
+}
+
+th {
+    color: #0066CC;
+    padding: 0 10px;
+}
+
+td {
+    padding: 3px 5px;
+}
+
+td.name,
+td.points {
+    font-weight: bold;
+}
+
+td.name {
+    text-align: left;
+}
+
+td.pos {
+    text-align: right;
+}
+
+#hiscore {
+    margin-top: 30px;
+}
+
+#submitscore {
+    margin-top: 30px;
+}
