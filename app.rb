@@ -95,7 +95,7 @@ post '/gamewon' do
   # params should contain: difficulty, time, moves and the score
   @params = params
   @name = session[:name]
-  @dailyChart = Score.chart(1)
+  @dailyChart = Score.chart(days: 1)
   haml :submitscore
 end
 
