@@ -54,6 +54,17 @@ class Score
     time = all(order: [:created_at.desc])[num_of_plays].created_at
     all(:created_at.gt => time, order:[:points.desc])[0...limit]
   end
+  
+  def update_score()
+    mins, secs = time.split(':')
+    mins += secs / 60.0
+    
+    n_cells = {'easy'=>5*5, 'medium'=>7*7, 'hard'=>9*9}
+    difficultyScore = n_cells[difficulty]**2
+    
+    var moveScore = Math.pow(1/2, Math.pow(movePenalty, 0.4));
+    
+  end
 end
 
 class Item
