@@ -35,6 +35,19 @@ td.name {
 
 td.pos {
     text-align: right;
+    color: gray;
+}
+
+td.good {
+    color: rgb(0, 190, 0);
+}
+
+td.average {
+    color: orange;
+}
+
+td.bad {
+    color: rgb(255, 58, 58);
 }
 
 tr.newscore {

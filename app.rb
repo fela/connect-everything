@@ -105,6 +105,14 @@ helpers do
   def partial( page, variables={} )
     haml page.to_sym, {layout:false}, variables
   end
+  
+  def moves_quality(num)
+    case num
+    when 0 then 'good'
+    when 1..3 then 'average'
+    else 'bad'
+    end
+  end
 end  
 
 

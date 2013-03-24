@@ -19,9 +19,10 @@
         %td.pos #{i+1}.
         %td.name  
           = s.name
+          
+        %td #{s.difficulty}
         %td
           = s.time
-        %td +#{s.moves}
-        %td #{s.difficulty}
+        %td{class: moves_quality(s.moves)} +#{s.moves}
         %td.points
           = s.points.round(1)
