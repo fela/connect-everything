@@ -52,7 +52,7 @@ class Score
     limit = 10
     num_of_plays = 30
     time = all(order: [:created_at.desc])[num_of_plays].created_at
-    all(:created_at.gt => time, order:[:score.desc])[0...limit]
+    all(:created_at.gt => time, order:[:points.desc])[0...limit]
   end
 end
 
