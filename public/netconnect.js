@@ -1,3 +1,5 @@
+(function(){
+
 var canvas = document.getElementById('gamecanvas');
 var context = canvas.getContext('2d');
 
@@ -987,3 +989,4 @@ function getMousePosition(canvas, event) {
 
 
 game.init();
+})();

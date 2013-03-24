@@ -2,5 +2,7 @@
 * animations
 * no border level
 * protect from wrong scores
-* try layout diffirent from square
-* choose colors to as to minimize change
+* try layout different from square
+* choose colors as to minimize change
+* decrease time weight in score (square root)
+* try layout with text in the right

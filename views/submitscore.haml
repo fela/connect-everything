@@ -24,7 +24,7 @@
     %input.btn.btn-primary{type: 'submit', value:'Show position'}
 :javascript
   var text_input = document.getElementById ('nameinput');
+  text_input.focus ();
   if (text_input.value != '') {
-    text_input.focus ();
     text_input.select ();
   }

@@ -1,6 +1,6 @@
 require 'sinatra'
 require 'haml'
-require 'data_mapper'
+require 'data_mapper' 
 
 class Score
   include DataMapper::Resource
