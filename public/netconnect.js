@@ -211,6 +211,66 @@ game.init = function() {
     
     this.updateConnectedComponents = function() {
         var num = this.connectedComponents();
+        if (num == 1) {
+            this.updateColors();
+            return num;
+        }
+        
+        // we create arrays where the key is the connected component and
+        // for colors the values are lists of colors of the old elements
+        // for
+        
+        // first index is conn comp
+        // second index is color
+        // value is num of preferences
+        // (num of colored cells based on the base colors)
+        var ccToPrefs = [];
+        for (var i = 0; i < this.cells.length; ++i) {
+            var cell = this.cells[i];
+            var cc = cell.connectedComponent;
+            var color = i%4; // base color: 4 colors repeated
+            // update ccToPrefs
+            if (!ccToPrefs[cc]) {
+                ccToPrefs[cc] = [0, 0, 0, 0];
+            }
+            ccToPrefs[cc][color] += 1;
+        }
+        
+        var voteMultipliers = [1, 1, 1, 1];
+        
+        // calculate the "winner" for each connected component
+        var ccToColor = []
+        for (var cc = 0; cc < ccToPrefs.length; ++cc) {
+            if (!ccToPrefs[cc]) continue;
+            ccToColor[cc] = -1;
+            var maxVotes = 0;
+            for (var color = 0; color < ccToPrefs[cc].length; ++color) {
+                var votes = ccToPrefs[cc][color]
+                if (!votes) continue;
+                if (votes*voteMultipliers[color] >= maxVotes) {
+                    maxVotes = votes*voteMultipliers[color];
+                    ccToColor[cc] = color;
+                }
+            }
+            
+            //voteMultipliers[ccToColor[cc]] *= 0.99;
+        }
+        
+        // update colors
+        for (var i = 0; i < this.cells.length; ++i) {
+            var cell = this.cells[i];
+            cell.connectedComponent = ccToColor[cell.connectedComponent];
+        }
+        
+        this.updateColors();
+        return num;
+    }
+    
+    this.preferredColor = function(list) {
+        
+    }
+    
+    this.updateColors = function() {
         for (var i = 0; i < this.cells.length; ++i) {
             var cell = this.cells[i];
             if (cell.color != cell.connectedComponent) {
@@ -218,7 +278,6 @@ game.init = function() {
                 cell.dirty = true;
             }
         }
-        return num;
     }
     
     this.updateUnmatchedCables = function() {
