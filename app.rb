@@ -66,10 +66,7 @@ class Score
     move_score = 0.5**(moves**0.6);
     
     mult_factor = 0.5
-    puts (mult_factor * difficulty_score * time_score * move_score)**0.5
     self.points = (mult_factor * difficulty_score * time_score * move_score)**0.5
-    puts 'new points:'
-    puts self.points
     save
   end
   
@@ -90,7 +87,7 @@ configure do
   #DataMapper.auto_upgrade!
   #DataMapper.auto_migrate!
   DataMapper::Model.raise_on_save_failure = true
-  Score.update_scores
+  #Score.update_scores
   enable :sessions
 end
 
