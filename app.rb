@@ -18,7 +18,7 @@ class Score
     # find best score
     best = nil
     #scoresSameName = Score.all(name: name, difficulty: difficulty);
-    scoresSameName = Score.all(name: name, difficulty: difficulty);
+    scoresSameName = Score.all(name: name);
     scoresSameName.each do |s|
       if best == nil || s.points > best.points
         best = s
