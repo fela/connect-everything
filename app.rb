@@ -45,7 +45,14 @@ class Score
       options[:created_at.gt] = time
     end
     
-    return all(options)[0...limit]
+    all(options)[0...limit]
+  end
+  
+  def self.recent_chart(opts={})
+    limit = 10
+    num_of_plays = 30
+    time = all(order: [:created_at.desc])[num_of_plays].created_at
+    all(:created_at.gt => time, order:[:created_at.desc])[0...limit]
   end
 end
 
@@ -69,9 +76,9 @@ helpers do
   alias_method :h, :escape_html
   
   def show_hiscores
-    @scores = Score.chart(single_entries: true)
-    @dailyScores = Score.chart(days: 1)
-    @weeklyScores = Score.chart(days: 7)
+    @overAllChart = Score.chart(single_entries: true)
+    @recentChart = Score.recent_chart
+    @weeklyChart = Score.chart(days: 7)
     haml :hiscores
   end
   
@@ -95,7 +102,7 @@ post '/gamewon' do
   # params should contain: difficulty, time, moves and the score
   @params = params
   @name = session[:name]
-  @dailyChart = Score.chart(days: 1)
+  @recentChart = Score.recent_chart
   haml :submitscore
 end
 
