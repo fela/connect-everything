@@ -1,28 +1,4 @@
-#hiscore
-  %table
-    %tr
-      %th
-      %th
-        name
-      %th
-        time
-      %th
-        moves
-      %th
-        level
-      %th
-        score
-    - @scores.each_with_index do |s, i|
-      %tr{class: s == @newScore ? 'newscore' : ''}
-        %td.pos #{i+1}.
-        %td.name  
-          = s.name
-        %td
-          = s.time
-        %td +#{s.moves}
-        %td #{s.difficulty}
-        %td.points
-          = s.points.round(1)
+= partial :list
 
 %br
 play again:

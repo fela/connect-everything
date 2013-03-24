@@ -41,11 +41,6 @@ configure do
   #DataMapper.auto_upgrade!
   #DataMapper.auto_migrate!
   DataMapper::Model.raise_on_save_failure = true
-
-  #score = Score.create(name: "fela", time: '3:03', moves: 1, difficulty: 'easy', score: 13.33)
-  #score = Score.create(name: 'fela', time: '3:03', moves: 1, difficulty: 'easy', points: 13.33)
-  #score.save
-  
   enable :sessions
 end
 
@@ -56,6 +51,10 @@ helpers do
   def show_hiscores
     @scores = Score.all(order: [:points.desc])[0...30]
     haml :hiscores
+  end
+  
+  def partial( page, variables={} )
+    haml page.to_sym, {layout:false}, variables
   end
 end  
 
