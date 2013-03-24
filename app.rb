@@ -50,7 +50,7 @@ configure do
   DataMapper.setup(:default, ENV['DATABASE_URL'] || 'postgres://fela:@localhost/net-connect')
   DataMapper.finalize
   #DataMapper.auto_upgrade!
-  DataMapper.auto_migrate!
+  #DataMapper.auto_migrate!
   DataMapper::Model.raise_on_save_failure = true
   enable :sessions
 end
