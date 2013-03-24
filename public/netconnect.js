@@ -202,10 +202,10 @@ game.init = function() {
         var timeScore = 1 / Math.sqrt(minutes);
         
         var movePenalty = -this.moves/2;
-        var moveScore = Math.pow(2/3, Math.pow(movePenalty, 0.7));
+        var moveScore = Math.pow(1/5, Math.pow(movePenalty, 0.4));
         
         // combine the the scores
-        var multFactor = 1/2;
+        var multFactor = 1;
         var score = multFactor * difficultyScore * timeScore * moveScore;
         // the square root is to decrease unneded differences between low and high scores
         return Math.sqrt(score);
