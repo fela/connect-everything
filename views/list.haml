@@ -1,4 +1,6 @@
 .hiscore
+  %h4
+    = title
   %table
     %tr
       %th
@@ -12,7 +14,7 @@
         level
       %th
         score
-    - @scores.each_with_index do |s, i|
+    - scores.each_with_index do |s, i|
       %tr{class: s == @newScore ? 'newscore' : ''}
         %td.pos #{i+1}.
         %td.name  

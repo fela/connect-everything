@@ -1,4 +1,10 @@
-= partial :list
+.row-fluid
+  .span4
+    = partial :list, scores: @dailyScores, title: 'daily chart'
+  .span4
+    = partial :list, scores: @weeklyScores, title: 'weekly chart'
+  .span4
+    = partial :list, scores: @scores, title: 'all time chart'
 
 %br
 play again:

@@ -12,10 +12,12 @@ class Score
   property :difficulty, String
   property :points,     Float
   property :is_best_score, Boolean, default: false
+  property :created_at, DateTime
   
   def update_best_score
     # find best score
     best = nil
+    #scoresSameName = Score.all(name: name, difficulty: difficulty);
     scoresSameName = Score.all(name: name, difficulty: difficulty);
     scoresSameName.each do |s|
       if best == nil || s.points > best.points
@@ -25,6 +27,15 @@ class Score
     scoresSameName.each do |s|
       s.is_best_score = (s == best)
       s.save
+    end
+  end
+  
+  def self.chart(days=nil, limit=10)
+    if days == nil
+      return all(order: [:points.desc])[0...limit]
+    else
+      time = Time.now - 60*60*24*days
+      return all(:created_at.gt => time, order: [:points.desc])[0...limit]
     end
   end
 end
@@ -49,7 +60,9 @@ helpers do
   alias_method :h, :escape_html
   
   def show_hiscores
-    @scores = Score.all(order: [:points.desc])[0...30]
+    @scores = Score.chart(nil)
+    @dailyScores = Score.chart(1)
+    @weeklyScores = Score.chart(7)
     haml :hiscores
   end
   
@@ -57,6 +70,9 @@ helpers do
     haml page.to_sym, {layout:false}, variables
   end
 end  
+
+
+
 
 get '/' do
   haml :index
