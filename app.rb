@@ -55,15 +55,26 @@ class Score
     all(:created_at.gt => time, order:[:points.desc])[0...limit]
   end
   
-  def update_score()
+  def update_score
     mins, secs = time.split(':')
-    mins += secs / 60.0
+    mins = mins.to_f + secs.to_f / 60.0
+    time_score = 1.0/mins**0.5
     
     n_cells = {'easy'=>5*5, 'medium'=>7*7, 'hard'=>9*9}
-    difficultyScore = n_cells[difficulty]**2
+    difficulty_score = n_cells[difficulty]**2
     
-    var moveScore = Math.pow(1/2, Math.pow(movePenalty, 0.4));
+    move_score = 0.5**(moves**0.6);
     
+    mult_factor = 0.5
+    puts (mult_factor * difficulty_score * time_score * move_score)**0.5
+    self.points = (mult_factor * difficulty_score * time_score * move_score)**0.5
+    puts 'new points:'
+    puts self.points
+    save
+  end
+  
+  def self.update_scores
+    all().each {|s| s.update_score}
   end
 end
 
@@ -79,6 +90,7 @@ configure do
   #DataMapper.auto_upgrade!
   #DataMapper.auto_migrate!
   DataMapper::Model.raise_on_save_failure = true
+  Score.update_scores
   enable :sessions
 end
 
