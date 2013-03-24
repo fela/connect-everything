@@ -196,10 +196,10 @@ game.init = function() {
     
     this.calculateScore = function(time) {
         var nCells = this.rows * this.cols;
-        var difficultyScore = Math.pow(nCells, 2.5);
+        var difficultyScore = Math.pow(nCells, 2);
         
         var minutes = time / 60;
-        var timeScore = 1 / minutes;
+        var timeScore = 1 / Math.sqrt(minutes);
         
         var movePenalty = -this.moves/2;
         var moveScore = Math.pow(2/3, Math.sqrt(movePenalty));

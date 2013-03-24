@@ -108,7 +108,7 @@ post '/submitscore' do
   
   session[:name] = name
   
-  @newScore = Score.create(name: name, time: time, moves: moves, difficulty: difficulty, points: points)
+  @newScore = Score.create(name: name, time: time, moves: moves, difficulty: difficulty, points: points, created_at: Time.now)
   @newScore.save
   @newScore.update_best_score
   

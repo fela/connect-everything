@@ -6,3 +6,5 @@
 * choose colors as to minimize change
 * decrease time weight in score (square root)
 * try layout with text in the right
+* avoid double entries in the highscore list
+* anonimous scores
