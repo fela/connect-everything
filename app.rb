@@ -30,13 +30,22 @@ class Score
     end
   end
   
-  def self.chart(days=nil, limit=10)
-    if days == nil
-      return all(order: [:points.desc])[0...limit]
-    else
-      time = Time.now - 60*60*24*days
-      return all(:created_at.gt => time, order: [:points.desc])[0...limit]
+  def self.chart(opts={})
+    days = opts[:days] || nil
+    limit = opts[:limit] || 10
+    
+    
+    options = {order: [:points.desc]}
+    if opts[:single_entries]
+      options[:is_best_score] = true
     end
+    
+    if days
+      time = Time.now - 60*60*24*days
+      options[:created_at.gt] = time
+    end
+    
+    return all(options)[0...limit]
   end
 end
 
@@ -60,9 +69,9 @@ helpers do
   alias_method :h, :escape_html
   
   def show_hiscores
-    @scores = Score.chart(nil)
-    @dailyScores = Score.chart(1)
-    @weeklyScores = Score.chart(7)
+    @scores = Score.chart(single_entries: true)
+    @dailyScores = Score.chart(days: 1)
+    @weeklyScores = Score.chart(days: 7)
     haml :hiscores
   end
   
