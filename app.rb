@@ -50,7 +50,7 @@ class Score
   
   def self.recent_chart(opts={})
     limit = 10
-    num_of_plays = 15
+    num_of_plays = 10
     time = all(order: [:created_at.desc])[num_of_plays].created_at
     all(:created_at.gt => time, order:[:points.desc])[0...limit]
   end
