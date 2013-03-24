@@ -21,7 +21,11 @@
     - else
       %input{id: 'nameinput', name: 'name', type: 'text', placeholder: 'Enter your name...'}
     %br
-    %input.btn.btn-primary{type: 'submit', value:'Show position'}
+    %input.btn.btn-primary{type: 'submit', value:'Add to charts'}
+
+%br
+= partial(:list, title: 'Daily chart', scores: @dailyChart) unless @dailyChart.empty?
+
 :javascript
   var text_input = document.getElementById ('nameinput');
   text_input.focus ();

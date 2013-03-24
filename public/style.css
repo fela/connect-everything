@@ -48,6 +48,11 @@ tr.newscore {
 #submitscore {
     margin-top: 100px;
 }
+
+input {
+    margin-top: 5px;
+}
+
 #container {
     text-align: center;
 }
