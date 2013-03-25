@@ -16,7 +16,6 @@
         var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
       })();
     %script{src: "http://code.jquery.com/jquery.js"}
-    %script{src: "bootstrap.min.js"}
     =yield
     %br
     play
@@ -29,5 +28,3 @@
     %a{:href => 'rules'} rules
     |
     %a{:href => 'hiscores'} hiscores
-    
-    %script{:src => "./netconnect.js"}

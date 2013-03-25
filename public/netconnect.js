@@ -100,6 +100,7 @@ game.init = function() {
             cell.rotateCounterClockwise();
         }
         game.moves--;
+        game.updateMoves();
         game.updateGame();
     }
     canvas.onselectstart = function() {return false;}
@@ -555,6 +556,8 @@ game.init = function() {
             var cell = this.cells[i];
             this.moves += cell.shuffle();
         }
+        this.originalMoves = this.moves;
+        this.updateMoves();
     }
     
     this.getRandomColor = function(num) {
@@ -595,6 +598,35 @@ game.init = function() {
         this.draw(true);
     }
     
+    this.getTimeStamp = function() {
+        var endTime = new Date().getTime();
+        var diff = (endTime - this.startTime)/1000; // time in seconds
+        var mins = Math.floor(diff / 60);
+        var secs = Math.floor(diff % 60);
+        var secsStr = '' + secs;
+        if (secs < 10) {
+            secsStr = '0' + secs;
+        }
+        var timeStamp = '' + mins + ':' + secsStr;
+        return timeStamp
+    }
+    
+    var _this = this;
+    this.updateTimeDisplay = function() {
+        time = document.getElementById('time');
+        time.innerHTML = _this.getTimeStamp();
+    }
+    
+    this.updateMoves = function() {
+        time = document.getElementById('moves');
+        time.innerHTML = (this.originalMoves-this.moves)+'/'+this.originalMoves;
+        if (this.moves <= 3) {
+            time.className = 'average'
+        }
+        if (this.moves <= 0) {
+            time.className = 'bad'
+        }
+    }
     
     
     // TODO: where should I put this actually?
@@ -626,6 +658,7 @@ game.init = function() {
     this.updateWidthAndHeight();
     this.cells = [];
     this.startTime = new Date().getTime();
+    setInterval(_this.updateTimeDisplay, 1000);
     do {
         this.createGame();
     } while (!this.isGameOk());

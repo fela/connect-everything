@@ -77,7 +77,7 @@ class Score
     lastname = ''
     all(order: [:created_at.desc]).each do |s|
       # end after 10th name
-      # but first check for other game by same name
+      # but first check for other games by same author
       if res.size == limit && !ending
         ending = true
         lastname = s.name

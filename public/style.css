@@ -38,15 +38,15 @@ td.pos {
     color: gray;
 }
 
-td.good {
+.good {
     color: rgb(0, 190, 0);
 }
 
-td.average {
+.average {
     color: orange;
 }
 
-td.bad {
+.bad {
     color: rgb(255, 58, 58);
 }
 
@@ -75,4 +75,17 @@ input {
 
 .pointsnumber {
     font-size: 25px;
+}
+
+
+.gameinfo {
+    color: gray;
+    padding-top: 60px;
+    vertical-align: top;
+    text-align: left;
+    min-width: 150px;
+}
+
+span#time {
+    color: white;
 }
