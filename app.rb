@@ -55,6 +55,21 @@ class Score
     all(:created_at.gt => time, order:[:points.desc])[0...limit]
   end
   
+  def self.recent_games
+    limit = 10
+    scores = []
+    names = {}
+    names.default = 0
+    all(order: [:created_at.desc]).each do |s|
+      names[s.name] += 1
+      if names[s.name] <= 2
+        scores << s
+        break if scores.size == 10
+      end
+    end
+    scores.sort_by{|x|-x.points}
+  end
+  
   def self.recent_people
     limit = 10
     res = {} # name to highest score
@@ -116,7 +131,7 @@ helpers do
   
   def show_hiscores
     @overAllChart = Score.chart(single_entries: true)
-    @recentChart = Score.recent_chart
+    @recentChart = Score.recent_games
     @recentPeopleChart = Score.recent_people
     haml :hiscores
   end
@@ -149,7 +164,7 @@ post '/gamewon' do
   # params should contain: difficulty, time, moves and the score
   @params = params
   @name = session[:name]
-  @recentChart = Score.recent_chart
+  @recentChart = Score.recent_games
   haml :submitscore
 end
 
