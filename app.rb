@@ -89,7 +89,7 @@ configure do
   DataMapper::Model.raise_on_save_failure = true
   
   time = Time.now - 60*60*11
-  Score.all(name:Dan, :created_at.gt => time).destroy
+  Score.all(name:'Dan', :created_at.gt => time).destroy
   #Score.update_scores
   enable :sessions
 end
