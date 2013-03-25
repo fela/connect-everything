@@ -55,6 +55,21 @@ class Score
     all(:created_at.gt => time, order:[:points.desc])[0...limit]
   end
   
+  def self.recent_people
+    limit = 10
+    res = {} # name to highest score
+    all(order: [:created_at.desc]).each do |s|
+      #p s
+      break if res.size == limit
+      old = res[s.name]
+      if old.nil? or s.points > old.points
+        #p 'adding'
+        res[s.name] = s
+      end
+    end
+    res.values.sort_by{|x|-x.points}
+  end
+  
   def update_score
     mins, secs = time.split(':')
     mins = mins.to_f + secs.to_f / 60.0
@@ -80,6 +95,9 @@ class Item
  
   property :text, String,:key => true
 end
+
+
+
  
 configure do
   DataMapper.setup(:default, ENV['DATABASE_URL'] || 'postgres://fela:@localhost/net-connect')
@@ -99,7 +117,7 @@ helpers do
   def show_hiscores
     @overAllChart = Score.chart(single_entries: true)
     @recentChart = Score.recent_chart
-    @weeklyChart = Score.chart(days: 7)
+    @recentPeopleChart = Score.recent_people
     haml :hiscores
   end
   
