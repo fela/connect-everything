@@ -73,12 +73,19 @@ class Score
   def self.recent_people
     limit = 10
     res = {} # name to highest score
+    ending = false
+    lastname = ''
     all(order: [:created_at.desc]).each do |s|
-      #p s
-      break if res.size == limit
+      # end after 10th name
+      # but first check for other game by same name
+      if res.size == limit && !ending
+        ending = true
+        lastname = s.name
+      end
+      break if ending && s.name != lastname
+      
       old = res[s.name]
       if old.nil? or s.points > old.points
-        #p 'adding'
         res[s.name] = s
       end
     end
