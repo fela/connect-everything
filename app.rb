@@ -167,6 +167,11 @@ get '/rules' do
   haml :rules
 end
 
+get '/privatechart/:order' do
+  @chart = Score.all(order: [params[:order].to_sym.desc])
+  haml :privatechart
+end
+
 post '/gamewon' do
   # params should contain: difficulty, time, moves and the score
   @params = params
