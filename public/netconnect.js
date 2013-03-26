@@ -209,7 +209,13 @@ game.init = function() {
         var multFactor = 1/2;
         var score = multFactor * difficultyScore * timeScore * moveScore;
         // the square root is to decrease unneded differences between low and high scores
-        return Math.sqrt(score);
+        
+        score = Math.sqrt(score)
+        if (this.difficulty == 'hardest') {
+            score *= 2;
+            score += 10;
+        }
+        return score;
     }
     
     this.updateConnectedComponents = function() {
@@ -289,7 +295,11 @@ game.init = function() {
         }
     }
     
-    this.cellAt = function(row, col) {
+    this.cellAt = function(row, col, wrapping) {
+        if (wrapping) {
+            row = (row+this.rows)%this.rows
+            col = (col+this.cols)%this.cols
+        }
         if (row < 0 || row >= this.rows || col < 0 || col >= this.cols) {
             return null;
         }
@@ -374,18 +384,21 @@ game.init = function() {
         var minVal;
         var maxVal;
         var nCells = this.rows * this.cols;
-        if (nCells < 35) {
+        if (this.difficulty == 'easy') {
             // easy
             minVal = 1;
             maxVal = 5;
-        } else if (nCells < 70) {
+        } else if (this.difficulty == 'medium') {
             // medium
             minVal = 5;
             maxVal = 20;
-        } else {
+        } else if (this.difficulty == 'hard'){
             // difficult
             minVal = 8;
             maxVal = 20;
+        } else {
+            minVal = 50;
+            maxVal = 70;
         }
         if (expectedEfford > minVal && expectedEfford < maxVal) {
             return true;
@@ -645,6 +658,10 @@ game.init = function() {
     } else if (difficulty == 'hard'){
         this.rows = 9;
         this.cols = 9;
+    } else if (difficulty == 'hardest'){
+        this.rows = 9;
+        this.cols = 9;
+        this.wrapping = true;
     } else {
         // default easy
         difficulty = 'easy'
@@ -702,16 +719,16 @@ function Cell(row, col, size, game) {
     // for game creation
     // wether a new cable could be added up, right, down, left, respertively
     this.canAddCable = [true, true, true, true];
-    if (this.row == 0) {
+    if (this.row == 0 && !this.game.wrapping) {
         this.canAddCable[this.Up] = false;
     }
-    if (this.col == 0) {
+    if (this.col == 0 && !this.game.wrapping) {
         this.canAddCable[this.Left] = false;
     }
-    if (this.row == game.rows-1) {
+    if (this.row == game.rows-1 && !this.game.wrapping) {
         this.canAddCable[this.Down] = false;
     }
-    if (this.col == game.cols-1) {
+    if (this.col == game.cols-1 && !this.game.wrapping) {
         this.canAddCable[this.Right] = false;
     }
     
@@ -959,15 +976,16 @@ function Cell(row, col, size, game) {
         this.dirty = true;
     }
     this.neighbor = function(direction) {
+        var wrapping = this.game.wrapping
         switch (direction) {
             case this.Up:
-                return this.game.cellAt(row-1, col);
+                return this.game.cellAt(row-1, col, wrapping);
             case this.Left:
-                return this.game.cellAt(row, col-1);
+                return this.game.cellAt(row, col-1, wrapping);
             case this.Down:
-                return this.game.cellAt(row+1, col);
+                return this.game.cellAt(row+1, col, wrapping);
             case this.Right:
-                return this.game.cellAt(row, col+1);
+                return this.game.cellAt(row, col+1, wrapping);
             default:
                 return null;
         }

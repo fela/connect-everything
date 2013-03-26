@@ -20,9 +20,11 @@
     play
     = succeed ',' do
       %a{:href => '/?easy'} easy
-    %a{:href => '/?medium'} medium
-    or
+    = succeed ',' do
+      %a{:href => '/?medium'} medium
     %a{:href => '/?hard'} hard
+    or
+    %a{:href => '/?hardest'} hardest
     |
     %a{:href => 'rules'} rules
     |
