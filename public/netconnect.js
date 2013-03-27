@@ -384,15 +384,15 @@ game.init = function() {
         var minVal;
         var maxVal;
         var nCells = this.rows * this.cols;
-        if (this.difficulty == 'easy') {
+        if (this.difficulty == 'easiest') {
             // easy
             minVal = 1;
             maxVal = 5;
-        } else if (this.difficulty == 'medium') {
+        } else if (this.difficulty == 'easy') {
             // medium
             minVal = 5;
             maxVal = 20;
-        } else if (this.difficulty == 'hard'){
+        } else if (this.difficulty == 'medium'){
             // difficult
             minVal = 8;
             maxVal = 20;
@@ -652,19 +652,19 @@ game.init = function() {
     }
     
     var difficulty = window.location.search.replace( "?", "" );
-    if (difficulty == 'medium') {
+    if (difficulty == 'easy') {
         this.rows = 7;
         this.cols = 7;
-    } else if (difficulty == 'hard'){
+    } else if (difficulty == 'medium'){
         this.rows = 9;
         this.cols = 9;
-    } else if (difficulty == 'hardest'){
+    } else if (difficulty == 'hard'){
         this.rows = 9;
         this.cols = 9;
         this.wrapping = true;
     } else {
         // default easy
-        difficulty = 'easy'
+        difficulty = 'easiest'
         this.rows = 5;
         this.cols = 5;
     }

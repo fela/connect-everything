@@ -19,13 +19,13 @@
     =yield
     play
     = succeed ',' do
-      %a{:href => '/?easy'} easy
+      %a{:href => '/?easiest'} easiest
     = succeed ',' do
-      %a{:href => '/?medium'} medium
-    %a{:href => '/?hard'} hard
+      %a{:href => '/?easy'} easy
+    %a{:href => '/?medium'} medium
     or
-    %a{:href => '/?hardest'} hardest
+    %a{:href => '/?hard'} hard
     |
-    %a{:href => 'rules'} rules
+    %a{:href => '/rules'} rules
     |
-    %a{:href => 'hiscores'} hiscores
+    %a{:href => '/hiscores'} hiscores

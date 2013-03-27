@@ -30,6 +30,18 @@ class Score
     end
   end
   
+  def self.rename_difficulties
+    all().each do |s|
+      s.difficulty = case s.difficulty
+      when 'easy' then 'easiest'
+      when 'medium' then 'easy'
+      when 'hard' then 'medium'
+      when 'hardest' then 'hard'
+      end
+      s.save
+    end
+  end
+  
   def self.chart(opts={})
     days = opts[:days] || nil
     limit = opts[:limit] || 10
@@ -97,7 +109,7 @@ class Score
     mins = mins.to_f + secs.to_f / 60.0
     time_score = 1.0/mins**0.5
     
-    n_cells = {'easy'=>5*5, 'medium'=>7*7, 'hard'=>9*9}
+    n_cells = {'easiest'=>5*5, 'easy'=>7*7, 'medium'=>9*9, 'hard'=>9*9}
     difficulty_score = n_cells[difficulty]**2
     
     move_score = 0.5**(moves**0.6);
@@ -129,6 +141,7 @@ configure do
   DataMapper::Model.raise_on_save_failure = true
   
   #Score.update_scores
+  #Score.rename_difficulties
   enable :sessions
 end
 
