@@ -141,7 +141,7 @@ configure do
   DataMapper::Model.raise_on_save_failure = true
   
   #Score.update_scores
-  #Score.rename_difficulties
+  Score.rename_difficulties
   enable :sessions
 end
 

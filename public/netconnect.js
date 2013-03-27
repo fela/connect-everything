@@ -81,7 +81,7 @@ Array.prototype.random = function() {
 }
 
 var game = {};
-game.Border = 1/3; // as a proportion of one cell
+game.Border = 1/4; // as a proportion of one cell
 game.context = context;
 game.init = function() {
     
@@ -584,7 +584,7 @@ game.init = function() {
     }
     
     this.updateWidthAndHeight = function() {
-        var width = $(window).width()-10;
+        var width = $(window).width()-10; // TODO change
         var height = $(window).height()-50;
         if (width < height) {
             height = width;
@@ -828,11 +828,40 @@ function Cell(row, col, size, game) {
         if (this.dirty == false && !force) {
             return;
         }
+        this.drawCell();
+        
+        if (this.game.wrapping) {
+            var x = null;
+            var y = null;
+            if (this.row == 0) {
+                this.drawCell(0, this.size*this.game.cols);
+            }
+            if (this.col == 0) {
+                this.drawCell(this.size*this.game.rows, 0);
+            }
+            if (this.row == this.game.rows-1) {
+                this.drawCell(0, -this.size*this.game.cols);
+            }
+            if (this.col == this.game.cols-1) {
+                this.drawCell(-this.size*this.game.rows, 0);
+            }
+        }
+        this.dirty = false;
+    }
+    
+    this.drawCell = function(x, y) {
+        if (!x) x = 0;
+        if (!y) y = 0;
+        var ctx = this.context;
+        ctx.save();
+        ctx.translate(x, y);
         this.drawBackground();
         this.drawCables();
         this.drawHover();
         this.dirty = false;
+        ctx.restore();
     }
+    
     this.drawBackground = function() {
         ctx = this.context;
         
@@ -843,7 +872,8 @@ function Cell(row, col, size, game) {
         } else {
             ctx.fillStyle = 'black';
         }
-        ctx.lineWidth = 1;
+        var lineWidth = 1
+        ctx.lineWidth = lineWidth;
         ctx.beginPath();
         ctx.rect(this.x(), this.y(), this.size, this.size);
         ctx.closePath();
@@ -898,9 +928,9 @@ function Cell(row, col, size, game) {
     }
     
     this.drawCables = function() {
-        for (var i = 0; i<4; ++i) {
-            var unmatched = this.unmatchedCables[i];
-            if (this.cables[i]) this.drawCable(i, unmatched);
+        for (var dir = 0; dir < 4; ++dir) {
+            var unmatched = this.unmatchedCables[dir];
+            if (this.cables[dir]) this.drawCable(dir, unmatched);
         }
         if (this.isEndPoint()) {
             this.drawEndPoint();
@@ -924,20 +954,29 @@ function Cell(row, col, size, game) {
         var times = cable;
         this.rotateCanvasMatrixAroundCenter(times);
         this.drawCableUp(unmatched);
+        
+        ctx.restore();
+    }
+    
+    this.drawCableWrapping = function(cable, unmatched) {
+        var ctx = this.context;
+        ctx.save();
+        var times = cable;
+        this.rotateCanvasMatrixAroundCenter(times);
+        this.drawCableWrappingUp(unmatched);
         ctx.restore();
     }
     
     // draws upward cable
     // used as a base to draw cables in all directions
     this.drawCableUp = function(unmatched) {
-        var lineWidth = this.size/5; // works better if even
+        var lineWidth = this.size/5;
         var centerX = this.x() + this.size / 2;
         var centerY = this.y() + this.size / 2;
         ctx = this.context;
         ctx.lineWidth = lineWidth;
         ctx.fillStyle = this.game.color(this.color);
         ctx.beginPath();
-        // move to top
         ctx.fillRect(centerX-lineWidth/2, this.y(), lineWidth, this.size/2+lineWidth/2);
         //ctx.moveTo(centerX, this.y);
         //ctx.lineTo(centerX, centerY+(lineWidth/2));
@@ -951,6 +990,17 @@ function Cell(row, col, size, game) {
             ctx.closePath();
             ctx.fill();
         }
+    }
+    
+    this.drawCableWrappingUp = function(unmatched) {
+        var lineWidth = this.size/5;
+        var centerX = this.x() + this.size / 2;
+        ctx = this.context;
+        ctx.fillStyle = this.game.color(this.color);
+        ctx.beginPath();
+        ctx.fillRect(centerX-lineWidth/2, this.y()-lineWidth, lineWidth, lineWidth);
+        ctx.closePath();
+        ctx.fill();
     }
     
     // helper function
