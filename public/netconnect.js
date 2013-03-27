@@ -211,7 +211,7 @@ game.init = function() {
         // the square root is to decrease unneded differences between low and high scores
         
         score = Math.sqrt(score)
-        if (this.difficulty == 'hardest') {
+        if (this.difficulty == 'hard') {
             score *= 1.5;
             score += 10;
         }
