@@ -212,7 +212,7 @@ game.init = function() {
         
         score = Math.sqrt(score)
         if (this.difficulty == 'hard') {
-            score *= 1.5;
+            score *= 1.3;
             score += 10;
         }
         return score;
