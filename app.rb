@@ -70,7 +70,7 @@ class Score
     scores.sort_by{|x|-x.points}
   end
   
-  def self.recent_people
+  def self.recent_players
     limit = 10
     res = {} # name to highest score
     ending = false
@@ -139,7 +139,7 @@ helpers do
   def show_hiscores
     @overAllChart = Score.chart(single_entries: true)
     @recentChart = Score.recent_chart
-    @recentPeopleChart = Score.recent_people
+    @recentPeopleChart = Score.recent_players
     haml :hiscores
   end
   
@@ -176,7 +176,7 @@ post '/gamewon' do
   # params should contain: difficulty, time, moves and the score
   @params = params
   @name = session[:name]
-  @recentChart = Score.recent_games
+  @chart = Score.recent_players
   haml :submitscore
 end
 

@@ -24,7 +24,7 @@
     %input.btn.btn-primary{type: 'submit', value:'Add to charts'}
 
 %br
-= partial(:list, title: 'recent plays chart', scores: @recentChart) unless @recentChart.empty?
+= partial(:list, title: 'recent players', scores: @chart) unless @chart.empty?
 
 :javascript
   var text_input = document.getElementById ('nameinput');
