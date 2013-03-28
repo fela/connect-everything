@@ -350,10 +350,10 @@ game.init = function() {
             incompleteCells = newIncompleteCells;
             
             // debugging only
-            cell.dirty = true;
-            newCell.dirty = true;
-            cell.draw();
-            newCell.draw();
+            //cell.dirty = true;
+            //newCell.dirty = true;
+            //cell.draw();
+            //newCell.draw();
             
             emptyCells--;
         }
