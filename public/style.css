@@ -10,6 +10,14 @@ canvas {
     margin-top: 5px;
 }
 
+span#time {
+    color: white;
+}
+
+span.moves {
+    color: white;
+}
+
 table {
     margin: 0 auto;
 }
@@ -84,8 +92,4 @@ input {
     vertical-align: top;
     text-align: left;
     min-width: 150px;
-}
-
-span#time {
-    color: white;
 }

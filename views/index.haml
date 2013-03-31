@@ -3,12 +3,13 @@
     %td
       %canvas{id: 'gamecanvas', height: 0, width: 0}
     %td.gameinfo
+      moves:
+      %strong
+        %span#moves.moves
+          0/0
+      %br
       time:
       %span#time
         0:00
-      %br
-      moves:
-      %span#moves
-        0/0
 
 %script{src: "netconnect.js"}
