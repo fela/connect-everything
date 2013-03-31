@@ -99,11 +99,46 @@ game.init = function() {
         } else {
             cell.rotateCounterClockwise();
         }
-        game.moves--;
+        game.handleNewClick(cellAndRotation)
         game.updateMoves();
         game.updateGame();
     }
     canvas.onselectstart = function() {return false;}
+    
+    this.handleNewClick = function(cellAndRotation) {
+        game.moves--;
+        if (this.lastClicks.length > 0 && cellAndRotation.cell != this.lastClicks[0].cell) {
+            this.lastClicks = [];
+        }
+        this.lastClicks.push(cellAndRotation);
+        
+        this.mergeClicks();
+    }
+    
+    this.mergeClicks = function() {
+        var nClicks = this.lastClicks.length;
+        var nMoves = 0;
+        for (var i = 0; i < this.lastClicks.length; ++i) {
+            if (this.lastClicks[i].clockwise) {
+                nMoves++;
+            } else {
+                nMoves--;
+            }
+        }
+        var clockwise = nMoves >= 0;
+        if (nMoves == 3 || nMoves == -3) clockwise = !clockwise;
+        
+        var cell = this.lastClicks[0].cell;
+        nMoves = cell.normalizeMoves(nMoves);
+        
+        // recreate lastClicks
+        this.lastClicks = [];
+        for (var i = 0; i < nMoves; ++i) {
+            this.lastClicks.push({cell: cell, clockwise: clockwise})
+        }
+        var clicksTooMany = nClicks - nMoves;
+        this.moves += clicksTooMany;
+    }
     
     
     this.getCellAndRotation = function(event) {
@@ -674,6 +709,7 @@ game.init = function() {
    
     this.updateWidthAndHeight();
     this.cells = [];
+    this.lastClicks = [];
     this.startTime = new Date().getTime();
     setInterval(_this.updateTimeDisplay, 1000);
     do {
@@ -794,6 +830,11 @@ function Cell(row, col, size, game) {
             if (this.cables[i]) ++num;
         }
         return num;
+    }
+    
+    this.isStraightCable = function() {
+        return (!this.cables[0] && this.cables[1] && !this.cables[2] && this.cables[3]) ||
+               (this.cables[0] && !this.cables[1] && this.cables[2] && !this.cables[3])
     }
     
     this.isEndPoint = function() {
@@ -1047,26 +1088,23 @@ function Cell(row, col, size, game) {
             this.rotateClockwise();
         }
         
-        var moves = rotations;
-        if (moves == 3) {
-            moves = 1;
-        }
-        if (this.cables[0] && this.cables[1] && this.cables[2] && this.cables[3]) {
-            moves = 0;
-        }
-        if (!this.cables[0] && !this.cables[1] && !this.cables[2] && !this.cables[3]) {
-            moves = 0;
-        }
-        if (!this.cables[0] && this.cables[1] && !this.cables[2] && this.cables[3]) {
-            moves = moves % 2;
-        }
-        if (this.cables[0] && !this.cables[1] && this.cables[2] && !this.cables[3]) {
-            moves = moves % 2;
-        }
+        var moves = this.normalizeMoves(rotations);
         
         if (moves != 0) {
             this.dirty = true;
         }
+        return moves;
+    }
+    
+    // receives the number of rotations (optionally negative, max -4)
+    // and returns the number of equivalent moves from 0 to 2
+    // (the result is independent of the direction)
+    this.normalizeMoves = function(moves) {
+        moves = (moves + 4) % 4;
+        if (moves == 3) moves = 1;
+        var nCables = this.numOfCables();
+        if (nCables == 0 || nCables == 4) moves = 0;
+        if (this.isStraightCable()) moves %= 2;
         return moves;
     }
 }
