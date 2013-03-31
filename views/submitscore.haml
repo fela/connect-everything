@@ -3,14 +3,16 @@
     %span.pointsnumber
       = @params[:points].to_f.round(1)
     points
+  .moves{class: moves_quality(@params[:moves].to_i)}
+    %strong
+      = @params[:moves]
+    wrong move#{@params[:moves].to_i == 1 ? '' : 's'}
   .level
     level:
     = @params[:difficulty]
   .time
     time: 
     = @params[:time]
-  .moves
-    +#{@params[:moves]} moves
   %form{action: '/submitscore', method: 'post'}
     %input{name: 'moves', type: 'hidden', value: @params[:moves]}
     %input{name: 'time', type: 'hidden', value: @params[:time]}
