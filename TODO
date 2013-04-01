@@ -4,12 +4,14 @@
 * try layout different from square
 * choose colors as to minimize change
 * decrease time weight in score (square root)
-* try layout with text in the right
 * avoid double entries in the highscore list
 * anonimous scores
 * hardest level
-* menu
-* call extra moves errors
 * overlay with explanation on start
 * usernames maxlength 14
-* change order time and moves
+* check bug 11 last players
+* optimize for mobile
+  - unique click
+  - menu
+  - adapt to direction
+  - test

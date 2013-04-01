@@ -94,14 +94,7 @@ game.init = function() {
             return;
         }
         
-        if (clockwise) {
-            cell.rotateClockwise();
-        } else {
-            cell.rotateCounterClockwise();
-        }
-        game.handleNewClick(cellAndRotation)
-        game.updateMoves();
-        game.updateGame();
+        cell.animate(clockwise);
     }
     canvas.onselectstart = function() {return false;}
     
@@ -896,11 +889,19 @@ function Cell(row, col, size, game) {
         var ctx = this.context;
         ctx.save();
         ctx.translate(x, y);
+        if (this.isRotating) {
+            this.drawAnimationBackground();
+            for (var dir = 0; dir < 4; ++dir) {
+                var n = this.neighbor(dir);
+                if (n) n.draw(true);
+            }
+            this.rotateCanvasMatrixAroundCenter(this.rotation);
+        }
         this.drawBackground();
         this.drawCables();
-        this.drawHover();
         this.dirty = false;
         ctx.restore();
+        this.drawHover();
     }
     
     this.drawBackground = function() {
@@ -921,6 +922,18 @@ function Cell(row, col, size, game) {
         ctx.fill();
         ctx.stroke();
     }
+    
+    this.drawAnimationBackground = function() {
+        ctx = this.context;
+            ctx.fillStyle = 'black';
+            ctx.beginPath();
+            ctx.fillRect(this.x()-this.size/2, this.y(), 2*this.size, this.size);
+            ctx.fillRect(this.x(), this.y()-this.size/2, this.size, 2*this.size);
+            ctx.closePath();
+            ctx.fill();
+        
+    }
+    
     this.drawHover = function() {
         if (this.hover === null || typeof this.hover === 'undefined') {
             return;
@@ -993,7 +1006,7 @@ function Cell(row, col, size, game) {
         var ctx = this.context;
         ctx.save();
         var times = cable;
-        this.rotateCanvasMatrixAroundCenter(times);
+        this.rotateCanvasMatrixAroundCenter(times*Math.PI/2.0);
         this.drawCableUp(unmatched);
         
         ctx.restore();
@@ -1003,7 +1016,7 @@ function Cell(row, col, size, game) {
         var ctx = this.context;
         ctx.save();
         var times = cable;
-        this.rotateCanvasMatrixAroundCenter(times);
+        this.rotateCanvasMatrixAroundCenter(times*Math.PI/2.0);
         this.drawCableWrappingUp(unmatched);
         ctx.restore();
     }
@@ -1046,9 +1059,8 @@ function Cell(row, col, size, game) {
     
     // helper function
     // rotates times times 90 degree
-    this.rotateCanvasMatrixAroundCenter = function(times) {
+    this.rotateCanvasMatrixAroundCenter = function(rotation) {
         var ctx = this.context;
-        var rotation = times*Math.PI/2.0;
         var centerX = this.x() + this.size / 2;
         var centerY = this.y() + this.size / 2;
         ctx.translate(centerX, centerY);
@@ -1066,6 +1078,71 @@ function Cell(row, col, size, game) {
         this.cables.push(first);
         this.dirty = true;
     }
+    
+    // radiants
+    this.rotation = 0;
+    this.endRotation = 0;
+    this.speed = 0.7; // radiants/s
+    this.fps = 50;
+    this.framesLeft = 100;
+    this.clicks = []; // boolean clockwise or not
+    
+    this.animate = function(clockwise) {
+        this.isRotating = true;
+        this.clicks.push(clockwise);
+        var time = 0.3;
+        
+        // update rotations
+        var diff = Math.PI/2;
+        if (!clockwise) diff *= -1;
+        this.endRotation += diff;
+        
+        var dist = this.endRotation - this.rotation;
+        // speed in radiants/s 
+        this.speed = dist/time;
+        this.framesLeft = Math.floor(time * this.fps);
+        clearInterval(this.animationInterval);
+        this.startAnimation();
+    }
+    
+    this.drawFrame = function() {
+        this.updatePosition();
+        this.draw(true);
+        //this.rotateCanvasMatrixAroundCenter(this.rotation);
+        //this.rotateCanvasMatrixAroundCenter(-this.rotation);
+        this.framesLeft--;
+        if (this.framesLeft <= 0) {
+            this.stopAnimation();
+        }
+    }
+    
+    this.updatePosition = function() {
+        this.rotation += this.speed/this.fps;
+        
+    }
+    this.startAnimation = function() {
+        _this = this;
+        this.animationInterval = setInterval(function(){_this.drawFrame()}, 1000/this.fps);
+    }
+    this.stopAnimation = function() {
+        clearInterval(this.animationInterval);
+        for (var i = 0; i < this.clicks.length; ++i) {
+            var clockwise = this.clicks[i];
+            if (clockwise) {
+                this.rotateClockwise();
+            } else {
+                this.rotateCounterClockwise();
+            }
+            game.handleNewClick({cell:this, clockwise:clockwise});
+        }
+        this.clicks = [];
+        this.rotation = 0;
+        this.endRotation = 0;
+        this.isRotating = false;
+        game.updateMoves();
+        game.updateGame();
+    }
+    
     this.neighbor = function(direction) {
         var wrapping = this.game.wrapping
         switch (direction) {
