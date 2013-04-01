@@ -199,7 +199,7 @@ def get_or_post(path, opts={}, &block)
 end
 
 post '/submitscore' do
-  name = h params[:name][0...16] # limit max size
+  name = h params[:name][0...14]
   if (name.size < 1)
     show_hiscores
     return

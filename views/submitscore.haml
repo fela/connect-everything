@@ -19,9 +19,9 @@
     %input{name: 'difficulty', type: 'hidden', value: @params[:difficulty]}
     %input{name: 'points', type: 'hidden', value: @params[:points]}
     - if @name && @name.size > 0
-      %input{id: 'nameinput', name: 'name', type: 'text', value: @name, placeholder: 'Enter your name...'}
+      %input{id: 'nameinput', name: 'name', type: 'text', value: @name, placeholder: 'Enter your name...', maxlength: '14'}
     - else
-      %input{id: 'nameinput', name: 'name', type: 'text', placeholder: 'Enter your name...'}
+      %input{id: 'nameinput', name: 'name', type: 'text', placeholder: 'Enter your name...', maxlength: '14'}
     %br
     %input.btn.btn-primary{type: 'submit', value:'Add to charts'}
 
