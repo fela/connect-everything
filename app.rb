@@ -85,20 +85,15 @@ class Score
   def self.recent_players
     limit = 10
     res = {} # name to highest score
-    ending = false
-    lastname = ''
     all(order: [:created_at.desc]).each do |s|
       # end after 10th name
-      # but first check for other games by same author
-      if res.size == limit && !ending
-        ending = true
-        lastname = s.name
-      end
-      break if ending && s.name != lastname
+      # but first check for other games by same authors
+      name = s.name
+      isnewname = !res.has_key?(name)
+      break if res.size == limit && isnewname
       
-      old = res[s.name]
-      if old.nil? or s.points > old.points
-        res[s.name] = s
+      if isnewname or s.points > res[name].points
+        res[name] = s
       end
     end
     res.values.sort_by{|x|-x.points}
