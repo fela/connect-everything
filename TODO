@@ -1,5 +1,4 @@
 * remember difficulty level
-* animations
 * protect from wrong scores
 * try layout different from square
 * choose colors as to minimize change
@@ -8,10 +7,9 @@
 * anonimous scores
 * hardest level
 * overlay with explanation on start
-* usernames maxlength 14
-* check bug 11 last players
 * optimize for mobile
   - unique click
   - menu
   - adapt to direction
   - test
+* facebook tumbnail
