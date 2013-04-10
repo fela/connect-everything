@@ -13,18 +13,20 @@ class Score
   property :points,     Float
   property :is_best_score, Boolean, default: false
   property :created_at, DateTime
+
+  CHART_SIZE = 10
   
   def update_best_score
     # find best score
     best = nil
-    #scoresSameName = Score.all(name: name, difficulty: difficulty);
-    scoresSameName = Score.all(name: name);
-    scoresSameName.each do |s|
+    #scores_same_name = Score.all(name: name, difficulty: difficulty);
+    scores_same_name = Score.all(name: name)
+    scores_same_name.each do |s|
       if best == nil || s.points > best.points
         best = s
       end
     end
-    scoresSameName.each do |s|
+    scores_same_name.each do |s|
       s.is_best_score = (s == best)
       s.save
     end
@@ -37,6 +39,7 @@ class Score
       when 'medium' then 'easy'
       when 'hard' then 'medium'
       when 'hardest' then 'hard'
+      else nil
       end
       s.save
     end
@@ -44,7 +47,7 @@ class Score
   
   def self.chart(opts={})
     days = opts[:days] || nil
-    limit = opts[:limit] || 10
+    limit = opts[:limit] || CHART_SIZE
     
     
     options = {order: [:points.desc]}
@@ -61,14 +64,12 @@ class Score
   end
   
   def self.recent_chart(opts={})
-    limit = 10
-    num_of_plays = 10
+    num_of_plays = limit = CHART_SIZE
     time = all(order: [:created_at.desc])[num_of_plays].created_at
     all(:created_at.gt => time, order:[:points.desc])[0...limit]
   end
   
   def self.recent_games
-    limit = 10
     scores = []
     names = {}
     names.default = 0
@@ -76,14 +77,14 @@ class Score
       names[s.name] += 1
       if names[s.name] <= 2
         scores << s
-        break if scores.size == 10
+        break if scores.size == CHART_SIZE
       end
     end
     scores.sort_by{|x|-x.points}
   end
   
   def self.recent_players
-    limit = 10
+    limit = CHART_SIZE
     res = {} # name to highest score
     all(order: [:created_at.desc]).each do |s|
       # end after 10th name
@@ -107,7 +108,7 @@ class Score
     n_cells = {'easiest'=>5*5, 'easy'=>7*7, 'medium'=>9*9, 'hard'=>9*9}
     difficulty_score = n_cells[difficulty]**2
     
-    move_score = 0.5**(moves**0.6);
+    move_score = 0.5**(moves**0.6)
     
     mult_factor = 0.5
     self.points = (mult_factor * difficulty_score * time_score * move_score)**0.5
