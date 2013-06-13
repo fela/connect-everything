@@ -149,9 +149,9 @@ end
 configure do
   DataMapper.setup(:default, ENV['DATABASE_URL'] || 'postgres://fela:@localhost/net-connect')
   DataMapper.finalize
-  DataMapper.auto_upgrade!
-  Score.update_best_scores
-  Score.strip_names
+  #DataMapper.auto_upgrade!
+  #Score.update_best_scores
+  #Score.strip_names
   #DataMapper.auto_migrate!
   DataMapper::Model.raise_on_save_failure = true
   
