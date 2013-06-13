@@ -34,6 +34,7 @@ class Score
     scores_same_name.each do |s|
       s.is_best_score = (s == best)
       s.save
+      s.destroy if !s.is_best_score
     end
   end
   
@@ -147,7 +148,7 @@ configure do
   DataMapper.finalize
   #Score.strip_names
   #DataMapper.auto_upgrade!
-  #Score.update_best_scores
+  Score.update_best_scores
   #DataMapper.auto_migrate!
   DataMapper::Model.raise_on_save_failure = true
   
