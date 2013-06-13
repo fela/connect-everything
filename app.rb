@@ -132,6 +132,17 @@ class Score
   def self.strip_names
     all().each {|s|s.name = s.name.strip; s.normalized_name = s.name.downcase; s.save}
   end
+  def self.remove_blacklisted
+    blacklist = [/a fela/, /fuck/]
+    all().each do |s|
+      blacklist.each do |m|
+        if s.name =~ m
+          s.destroy
+          break
+        end
+      end
+    end
+  end
 end
 
 class Item
@@ -148,8 +159,9 @@ configure do
   DataMapper.finalize
   #Score.strip_names
   #DataMapper.auto_upgrade!
-  Score.update_best_scores
+  #Score.update_best_scores
   #DataMapper.auto_migrate!
+  Score.remove_blacklisted
   DataMapper::Model.raise_on_save_failure = true
   
   #Score.update_scores
