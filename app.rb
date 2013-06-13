@@ -7,6 +7,7 @@ class Score
   
   property :id,         Serial    # An auto-increment integer key
   property :name,       String
+  property :normalized_name, String
   property :time,       String
   property :moves,      Integer
   property :difficulty, String
@@ -15,12 +16,20 @@ class Score
   property :created_at, DateTime
 
   CHART_SIZE = 10
+
+  def normalized_name
+    name.strip.downcase
+  end
   
   def update_best_score
     # find best score
     best = nil
     #scores_same_name = Score.all(name: name, difficulty: difficulty);
-    scores_same_name = Score.all(name: name)
+    scores_same_name = Score.all().select {|x| x.normalized_name == normalized_name}
+    puts normalized_name
+    puts ':::'
+    puts scores_same_name
+    puts '-------------------'
     scores_same_name.each do |s|
       if best == nil || s.points > best.points
         best = s
@@ -74,8 +83,9 @@ class Score
     names = {}
     names.default = 0
     all(order: [:created_at.desc]).each do |s|
-      names[s.name] += 1
-      if names[s.name] <= 2
+      name = s.normalized_name
+      names[name] += 1
+      if names[name] <= 2
         scores << s
         break if scores.size == CHART_SIZE
       end
@@ -89,7 +99,7 @@ class Score
     all(order: [:created_at.desc]).each do |s|
       # end after 10th name
       # but first check for other games by same authors
-      name = s.name
+      name = s.normalized_name
       isnewname = !res.has_key?(name)
       break if res.size == limit && isnewname
       
@@ -118,6 +128,10 @@ class Score
   def self.update_scores
     all().each {|s| s.update_score}
   end
+
+  def self.update_best_scores
+    all().each {|s| s.update_best_score}
+  end
 end
 
 class Item
@@ -133,6 +147,7 @@ configure do
   DataMapper.setup(:default, ENV['DATABASE_URL'] || 'postgres://fela:@localhost/net-connect')
   DataMapper.finalize
   #DataMapper.auto_upgrade!
+  Score.update_best_scores
   #DataMapper.auto_migrate!
   DataMapper::Model.raise_on_save_failure = true
   
