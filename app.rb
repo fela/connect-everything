@@ -16,20 +16,16 @@ class Score
   property :created_at, DateTime
 
   CHART_SIZE = 10
-
-  def normalized_name
-    name.strip.downcase
-  end
   
   def update_best_score
     # find best score
     best = nil
     #scores_same_name = Score.all(name: name, difficulty: difficulty);
-    scores_same_name = Score.all().select {|x| x.normalized_name == normalized_name}
-    puts normalized_name
-    puts ':::'
-    puts scores_same_name
-    puts '-------------------'
+    scores_same_name = Score.all(normalized_name: normalized_name)
+    #puts normalized_name
+    #puts ':::'
+    #puts scores_same_name
+    #puts '-------------------'
     scores_same_name.each do |s|
       if best == nil || s.points > best.points
         best = s
@@ -133,7 +129,7 @@ class Score
     all().each {|s| s.update_best_score}
   end
   def self.strip_names
-    all().each {|s|s.name = s.name.strip; s.save}
+    all().each {|s|s.name = s.name.strip; s.normalized_name = s.name.downcase; s.save}
   end
 end
 
@@ -149,9 +145,9 @@ end
 configure do
   DataMapper.setup(:default, ENV['DATABASE_URL'] || 'postgres://fela:@localhost/net-connect')
   DataMapper.finalize
-  #DataMapper.auto_upgrade!
-  #Score.update_best_scores
-  #Score.strip_names
+  Score.strip_names
+  DataMapper.auto_upgrade!
+  Score.update_best_scores
   #DataMapper.auto_migrate!
   DataMapper::Model.raise_on_save_failure = true
   
@@ -227,7 +223,7 @@ post '/submitscore' do
   
   session[:name] = name
   
-  @newScore = Score.create(name: name, time: time, moves: moves, difficulty: difficulty, points: points, created_at: Time.now)
+  @newScore = Score.create(name: name, normalized_name: name.downcase, time: time, moves: moves, difficulty: difficulty, points: points, created_at: Time.now)
   @newScore.save
   @newScore.update_best_score
   
