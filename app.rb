@@ -161,7 +161,7 @@ configure do
   #DataMapper.auto_upgrade!
   #Score.update_best_scores
   #DataMapper.auto_migrate!
-  Score.remove_blacklisted
+  #Score.remove_blacklisted
   DataMapper::Model.raise_on_save_failure = true
   
   #Score.update_scores
