@@ -132,6 +132,9 @@ class Score
   def self.update_best_scores
     all().each {|s| s.update_best_score}
   end
+  def self.strip_names
+    all().each {|s|s.name = s.name.strip; s.save}
+  end
 end
 
 class Item
@@ -146,8 +149,9 @@ end
 configure do
   DataMapper.setup(:default, ENV['DATABASE_URL'] || 'postgres://fela:@localhost/net-connect')
   DataMapper.finalize
-  #DataMapper.auto_upgrade!
+  DataMapper.auto_upgrade!
   Score.update_best_scores
+  Score.strip_names
   #DataMapper.auto_migrate!
   DataMapper::Model.raise_on_save_failure = true
   
@@ -210,7 +214,7 @@ def get_or_post(path, opts={}, &block)
 end
 
 post '/submitscore' do
-  name = h params[:name][0...14]
+  name = h params[:name][0...14].strip
   if (name.size < 1)
     show_hiscores
     return
