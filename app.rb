@@ -34,7 +34,7 @@ class Score
     scores_same_name.each do |s|
       s.is_best_score = (s == best)
       s.save
-      s.destroy if !s.is_best_score
+      #s.destroy if !s.is_best_score
     end
   end
   
