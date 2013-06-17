@@ -893,7 +893,7 @@ function Cell(row, col, size, game) {
             this.drawAnimationBackground();
             for (var dir = 0; dir < 4; ++dir) {
                 var n = this.neighbor(dir);
-                if (n) n.draw(true);
+                if (n && !n.isRotating) n.draw(true);
             }
             this.rotateCanvasMatrixAroundCenter(this.rotation);
         }
@@ -1121,7 +1121,7 @@ function Cell(row, col, size, game) {
         
     }
     this.startAnimation = function() {
-        _this = this;
+        var _this = this;
         this.animationInterval = setInterval(function(){_this.drawFrame()}, 1000/this.fps);
     }
     this.stopAnimation = function() {
