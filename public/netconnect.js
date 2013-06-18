@@ -93,7 +93,8 @@ game.init = function() {
         if (!cell) {
             return;
         }
-        
+
+        cell.setMoved();
         cell.animate(clockwise);
     }
     canvas.onselectstart = function() {return false;}
@@ -101,15 +102,18 @@ game.init = function() {
     this.handleNewClick = function(cellAndRotation) {
         game.moves--;
         if (this.lastClicks.length > 0 && cellAndRotation.cell != this.lastClicks[0].cell) {
+            var cell = this.lastClicks[0].cell;
+            cell.unsetMoved();
             this.lastClicks = [];
         }
         this.lastClicks.push(cellAndRotation);
         
         this.mergeClicks();
-    }
+    };
     
     this.mergeClicks = function() {
         var nClicks = this.lastClicks.length;
+        if (nClicks == 0) return;
         var nMoves = 0;
         for (var i = 0; i < this.lastClicks.length; ++i) {
             if (this.lastClicks[i].clockwise) {
@@ -123,15 +127,21 @@ game.init = function() {
         
         var cell = this.lastClicks[0].cell;
         nMoves = cell.normalizeMoves(nMoves);
-        
+
+        if (nMoves == 0)
+            cell.unsetMoved();
+        else
+            cell.setMoved();
+
         // recreate lastClicks
         this.lastClicks = [];
         for (var i = 0; i < nMoves; ++i) {
             this.lastClicks.push({cell: cell, clockwise: clockwise})
         }
+        // give back the clicks that where counted but where undone
         var clicksTooMany = nClicks - nMoves;
         this.moves += clicksTooMany;
-    }
+    };
     
     
     this.getCellAndRotation = function(event) {
@@ -735,7 +745,8 @@ function Cell(row, col, size, game) {
     this.row = row;
     this.col = col;
     this.size = size;
-    //this.background = get_random_color();
+    this.background = 'black';
+    this.moved = false;
     this.game = game;
     // wether there is a cable up right down and left, respectively
     this.Up = 0
@@ -767,6 +778,16 @@ function Cell(row, col, size, game) {
     this.y = function() {
         return this.size*(this.row+game.Border);
     }
+
+    this.setMoved = function() {
+        this.moved = true;
+        this.draw(true);
+    };
+
+    this.unsetMoved = function() {
+        this.moved = false;
+        this.draw(true);
+    };
     
     this.addRandomCable = function() {
         var validDirection = false;
@@ -815,7 +836,7 @@ function Cell(row, col, size, game) {
         }
         // cannot add any cable
         return true;*/
-    }
+    };
     
     this.numOfCables = function() {
         var num = 0;
@@ -823,16 +844,16 @@ function Cell(row, col, size, game) {
             if (this.cables[i]) ++num;
         }
         return num;
-    }
+    };
     
     this.isStraightCable = function() {
         return (!this.cables[0] && this.cables[1] && !this.cables[2] && this.cables[3]) ||
                (this.cables[0] && !this.cables[1] && this.cables[2] && !this.cables[3])
-    }
+    };
     
     this.isEndPoint = function() {
         return this.numOfCables() == 1;
-    }
+    };
     
     this.updateUnmatchedCables = function() {
         for (var dir = 0; dir < 4; ++dir) {
@@ -842,7 +863,7 @@ function Cell(row, col, size, game) {
                 this.dirty = true;
             }
         }
-    }
+    };
     
     this.hasOpposingCable = function(dir) {
         var neighbor = this.neighbor(dir);
@@ -852,7 +873,7 @@ function Cell(row, col, size, game) {
         }
         var opposingDir = (dir + 2) % 4;
         return neighbor.cables[opposingDir];
-    }
+    };
     
     
     this.context = game.context;
@@ -881,7 +902,7 @@ function Cell(row, col, size, game) {
             }
         }
         this.dirty = false;
-    }
+    };
     
     this.drawCell = function(x, y) {
         if (!x) x = 0;
@@ -889,50 +910,90 @@ function Cell(row, col, size, game) {
         var ctx = this.context;
         ctx.save();
         ctx.translate(x, y);
+        ctx.save();
+        ctx.translate(this.x(), this.y());
         if (this.isRotating) {
             this.drawAnimationBackground();
             for (var dir = 0; dir < 4; ++dir) {
                 var n = this.neighbor(dir);
-                if (n && !n.isRotating) n.draw(true);
+                if (n && !n.isRotating) {
+                    ctx.restore();
+                    n.draw(true);
+                    ctx.save();
+                    ctx.translate(this.x(), this.y());
+                }
             }
             this.rotateCanvasMatrixAroundCenter(this.rotation);
         }
         this.drawBackground();
         this.drawCables();
-        this.dirty = false;
+        this.drawMoved();
+        this.drawBorder();
         ctx.restore();
+        ctx.restore();
+        this.dirty = false;
         this.drawHover();
-    }
+    };
     
     this.drawBackground = function() {
-        ctx = this.context;
+        var ctx = this.context;
         
         // draw contour and background
         ctx.strokeStyle = 'gray';
         if (this.marked) {
             ctx.fillStyle = 'rgb(100,100,100)';
         } else {
-            ctx.fillStyle = 'black';
+            ctx.fillStyle = this.background;
         }
-        var lineWidth = 1
-        ctx.lineWidth = lineWidth;
         ctx.beginPath();
-        ctx.rect(this.x(), this.y(), this.size, this.size);
+        ctx.rect(0, 0, this.size, this.size);
         ctx.closePath();
         ctx.fill();
+    };
+
+    this.drawMoved = function() {
+        return;
+        var size = this.size;
+        var border = size/20;
+
+        var x1, x2, x3;
+        var y1, y2, y3;
+        x1 = border;
+        y1 = border;
+
+
+
+
+        ctx.beginPath();
+        ctx.moveTo(x1, y1);
+        ctx.lineTo(x2, y2);
+        ctx.lineTo(x3, y3);
+        ctx.closePath();
+        ctx.fillStyle = 'white';
+        ctx.fill();
+    };
+
+    this.drawBorder = function() {
+        var ctx = this.context;
+        ctx.strokeStyle = 'gray';
+        var lw = 1;
+        ctx.lineWidth = lw;
+        ctx.beginPath();
+        ctx.rect(lw/2, lw/2, this.size-lw, this.size-lw);
+        ctx.closePath();
         ctx.stroke();
-    }
+    };
     
     this.drawAnimationBackground = function() {
-        ctx = this.context;
+        var ctx = this.context;
             ctx.fillStyle = 'black';
             ctx.beginPath();
-            ctx.fillRect(this.x()-this.size/2, this.y(), 2*this.size, this.size);
-            ctx.fillRect(this.x(), this.y()-this.size/2, this.size, 2*this.size);
+            ctx.fillRect(-this.size/2, 0, 2*this.size, this.size);
+            ctx.fillRect(0, -this.size/2, this.size, 2*this.size);
             ctx.closePath();
             ctx.fill();
         
-    }
+    };
     
     this.drawHover = function() {
         if (this.hover === null || typeof this.hover === 'undefined') {
@@ -979,7 +1040,7 @@ function Cell(row, col, size, game) {
         ctx.closePath();
         ctx.fillStyle = 'gray';
         ctx.fill();
-    }
+    };
     
     this.drawCables = function() {
         for (var dir = 0; dir < 4; ++dir) {
@@ -989,18 +1050,18 @@ function Cell(row, col, size, game) {
         if (this.isEndPoint()) {
             this.drawEndPoint();
         }
-    }
+    };
     
     this.drawEndPoint = function() {
         var ctx = this.context;
         ctx.fillStyle = this.game.color(this.color);
         ctx.beginPath();
-        var centerX = this.x() + this.size / 2;
-        var centerY = this.y() + this.size / 2;
+        var centerX = this.size / 2;
+        var centerY = this.size / 2;
         ctx.arc(centerX, centerY, this.size/5, 0, 2*Math.PI);
         ctx.closePath();
         ctx.fill();
-    }
+    };
     
     this.drawCable = function(cable, unmatched) {
         var ctx = this.context;
@@ -1010,7 +1071,7 @@ function Cell(row, col, size, game) {
         this.drawCableUp(unmatched);
         
         ctx.restore();
-    }
+    };
     
     this.drawCableWrapping = function(cable, unmatched) {
         var ctx = this.context;
@@ -1019,65 +1080,65 @@ function Cell(row, col, size, game) {
         this.rotateCanvasMatrixAroundCenter(times*Math.PI/2.0);
         this.drawCableWrappingUp(unmatched);
         ctx.restore();
-    }
+    };
     
     // draws upward cable
     // used as a base to draw cables in all directions
     this.drawCableUp = function(unmatched) {
-        var lineWidth = this.size/5;
-        var centerX = this.x() + this.size / 2;
-        var centerY = this.y() + this.size / 2;
-        ctx = this.context;
+        var lineWidth = this.size / 5;
+        var centerX = this.size / 2;
+        //var centerY = this.y() + this.size / 2;
+        var ctx = this.context;
         ctx.lineWidth = lineWidth;
         ctx.fillStyle = this.game.color(this.color);
         ctx.beginPath();
-        ctx.fillRect(centerX-lineWidth/2, this.y(), lineWidth, this.size/2+lineWidth/2);
+        ctx.fillRect(centerX-lineWidth/2, 0, lineWidth, this.size/2+lineWidth/2);
         //ctx.moveTo(centerX, this.y);
         //ctx.lineTo(centerX, centerY+(lineWidth/2));
         ctx.closePath();
         ctx.fill();
         
         if (unmatched) {
-            ctx.fillStyle = 'white'
+            ctx.fillStyle = 'white';
             ctx.beginPath();
-            ctx.fillRect(centerX-lineWidth/2, this.y(), lineWidth, lineWidth/2);
+            ctx.fillRect(centerX-lineWidth/2, 0, lineWidth, lineWidth/2);
             ctx.closePath();
             ctx.fill();
         }
-    }
+    };
     
     this.drawCableWrappingUp = function(unmatched) {
         var lineWidth = this.size/5;
-        var centerX = this.x() + this.size / 2;
+        var centerX = this.size / 2;
         ctx = this.context;
         ctx.fillStyle = this.game.color(this.color);
         ctx.beginPath();
         ctx.fillRect(centerX-lineWidth/2, this.y()-lineWidth, lineWidth, lineWidth);
         ctx.closePath();
         ctx.fill();
-    }
+    };
     
     // helper function
     // rotates times times 90 degree
     this.rotateCanvasMatrixAroundCenter = function(rotation) {
         var ctx = this.context;
-        var centerX = this.x() + this.size / 2;
-        var centerY = this.y() + this.size / 2;
+        var centerX = this.size / 2;
+        var centerY = this.size / 2;
         ctx.translate(centerX, centerY);
         ctx.rotate(rotation);
         ctx.translate(-centerX, -centerY);
-    }
+    };
     
     this.rotateClockwise = function() {
         var last = this.cables.pop();
         this.cables.unshift(last);
         this.dirty = true;
-    }
+    };
     this.rotateCounterClockwise = function() {
         var first = this.cables.shift();
         this.cables.push(first);
         this.dirty = true;
-    }
+    };
     
     // radiants
     this.rotation = 0;
@@ -1103,7 +1164,7 @@ function Cell(row, col, size, game) {
         this.framesLeft = Math.floor(time * this.fps);
         clearInterval(this.animationInterval);
         this.startAnimation();
-    }
+    };
     
     this.drawFrame = function() {
         this.updatePosition();
@@ -1114,16 +1175,17 @@ function Cell(row, col, size, game) {
         if (this.framesLeft <= 0) {
             this.stopAnimation();
         }
-    }
+    };
     
     this.updatePosition = function() {
         this.rotation += this.speed/this.fps;
-        
-    }
+    };
+
     this.startAnimation = function() {
         var _this = this;
         this.animationInterval = setInterval(function(){_this.drawFrame()}, 1000/this.fps);
-    }
+    };
+
     this.stopAnimation = function() {
         clearInterval(this.animationInterval);
         for (var i = 0; i < this.clicks.length; ++i) {
@@ -1141,7 +1203,8 @@ function Cell(row, col, size, game) {
         this.isRotating = false;
         game.updateMoves();
         game.updateGame();
-    }
+        this.draw(true);
+    };
     
     this.neighbor = function(direction) {
         var wrapping = this.game.wrapping
@@ -1157,7 +1220,7 @@ function Cell(row, col, size, game) {
             default:
                 return null;
         }
-    }
+    };
     
     this.shuffle = function() {
         var rotations = Math.floor(Math.random()*4);
@@ -1171,7 +1234,7 @@ function Cell(row, col, size, game) {
             this.dirty = true;
         }
         return moves;
-    }
+    };
     
     // receives the number of rotations (optionally negative, max -4)
     // and returns the number of equivalent moves from 0 to 2
@@ -1183,7 +1246,7 @@ function Cell(row, col, size, game) {
         if (nCables == 0 || nCables == 4) moves = 0;
         if (this.isStraightCable()) moves %= 2;
         return moves;
-    }
+    };
 }
 
 
