@@ -1,5 +1,7 @@
 # encoding: utf-8
 
+require 'colorize'
+
 class Cell
   attr_accessor :cables, :can_add
 
@@ -12,7 +14,6 @@ class Cell
     @can_add = {}
     Cell.each_direction do |dir|
       @cables[dir] = false
-      @can_add[dir] = false
     end
   end
 
@@ -105,7 +106,11 @@ class Cell
     end
   end
 
-  # grid creation helpers
+
+  ###
+  ###  grid creation helpers
+  ###
+
   def complete?
     @can_add.values.none?
   end
@@ -114,6 +119,26 @@ class Cell
     each_neighbor do |n, dir|
       n.can_add[Cell.opposite dir] = false
     end
+  end
+
+  # returns the neighbor towards which the new cable connects
+  def add_random_cable
+    raise 'cannot add any more cables' if complete?
+    # find a random direction
+    valid_directions = DIRECTIONS.select{|dir| @can_add[dir]}
+    dir = valid_directions[rand valid_directions.size]
+
+    add_cable dir
+  end
+
+  def add_cable(dir)
+    @cables[dir] = true
+    @can_add[dir] = false
+    n = neighbor(dir)
+    n.cables[Cell.opposite(dir)] = true
+    n.can_add[Cell.opposite(dir)] = false
+    n.neighbors_cannot_connect
+    n
   end
 end
 
@@ -137,8 +162,9 @@ end
 
 class Grid
   def initialize opt={}
-    @rows = opt[:rows] || 5
-    @cols = opt[:cols] || 5
+    @rows = opt[:rows] || 9
+    @cols = opt[:cols] || 13
+    @wrapping = opt[:wrapping]
     create_cables
   end
 
@@ -155,19 +181,27 @@ class Grid
 
   def create_cables
     create_empty_grid
-    @cells.each do |c|
+    #@cells.each do |c|
+    #  Cell.each_direction do |dir|
+    #    c.cables[dir] = true if rand > 0.5
+    #  end
+    #end
+
+    @cells.each do |cell|
       Cell.each_direction do |dir|
-        c.cables[dir] = true if rand > 0.5
+        cell.can_add[dir] = cell.neighbor(dir) != nil
       end
     end
 
+    # random initial cell
     cell0 = @cells[rand @cells.size]
     cell0.neighbors_cannot_connect
     incomplete_cells = [cell0]
     empty_cells = @rows * @cols
     while empty_cells > 0 && incomplete_cells.length > 0 do
       cell = incomplete_cells[rand incomplete_cells.size]
-      incomplete_cells << cell
+      new_cell = cell.add_random_cable
+      incomplete_cells << new_cell
       # remove completed cells
       incomplete_cells.select! {|c| !c.complete?}
       empty_cells -= 1
@@ -178,7 +212,10 @@ class Grid
     res = ''
     @rows.times do |r|
       @cols.times do |c|
-        res << cell_at(r, c).to_s
+        cell = cell_at(r, c)
+        s = cell.to_s
+        s = s.on_red if cell.complete?
+        res << s
       end
       res << "\n"
     end
@@ -188,11 +225,15 @@ class Grid
   # 0 indexed
   def cell_at(row, col)
     if row < 0 || row >= @rows || col < 0 || col >= @cols
-      nil
-    else
-      @cells[row*@cols + col]
+      if @wrapping
+        row %= @rows
+        col %= @cols
+      else
+        return nil
+      end
     end
+    @cells[row*@cols + col]
   end
 end
 
-puts Grid.new.to_s
+puts Grid.new(wrapping: true).to_s

@@ -8,3 +8,4 @@ gem 'rdiscount' # for markdown
 gem 'datamapper'
 gem 'pg'
 gem 'dm-postgres-adapter'
+gem 'colorize'

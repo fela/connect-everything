@@ -3,6 +3,7 @@ GEM
   specs:
     addressable (2.2.8)
     bcrypt-ruby (3.0.1)
+    colorize (0.5.8)
     data_objects (0.10.12)
       addressable (~> 2.1)
     datamapper (1.2.0)
@@ -73,6 +74,7 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
+  colorize
   datamapper
   dm-postgres-adapter
   haml
