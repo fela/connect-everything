@@ -929,7 +929,7 @@ function Cell(row, col, size, game) {
         }
         this.drawBackground();
         this.drawCables();
-        this.drawMoved();
+        //this.drawMoved();
         this.drawBorder();
         ctx.restore();
         ctx.restore();
