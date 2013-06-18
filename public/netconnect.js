@@ -43,7 +43,7 @@ HSLtoRGB = function (hsl) {
         b = hue2rgb(p, q, h - 1/3);
     }
     var res = [r * 0xFF, g * 0xFF, b * 0xFF];
-    
+
     return "rgb(" + [Math.floor(res[0]), Math.floor(res[1]), Math.floor(res[2])].join(",") + ")";
 };
 
@@ -78,7 +78,7 @@ function randomDirection() {
 // gets a random element from an array
 Array.prototype.random = function() {
     return this[Math.floor(Math.random() * this.length)];
-}
+};
 
 var game = {};
 game.Border = 1/4; // as a proportion of one cell
@@ -96,7 +96,7 @@ game.init = function() {
 
         cell.setMoved();
         cell.animate(clockwise);
-    }
+    };
     canvas.onselectstart = function() {return false;}
     
     this.handleNewClick = function(cellAndRotation) {
@@ -115,7 +115,8 @@ game.init = function() {
         var nClicks = this.lastClicks.length;
         if (nClicks == 0) return;
         var nMoves = 0;
-        for (var i = 0; i < this.lastClicks.length; ++i) {
+        var i;
+        for (i = 0; i < this.lastClicks.length; ++i) {
             if (this.lastClicks[i].clockwise) {
                 nMoves++;
             } else {
@@ -135,7 +136,7 @@ game.init = function() {
 
         // recreate lastClicks
         this.lastClicks = [];
-        for (var i = 0; i < nMoves; ++i) {
+        for (i = 0; i < nMoves; ++i) {
             this.lastClicks.push({cell: cell, clockwise: clockwise})
         }
         // give back the clicks that where counted but where undone
@@ -149,14 +150,14 @@ game.init = function() {
         var size = this.calculateSize(); // cellsize
         var x = pos.x-this.Border*size;
         var y = pos.y-this.Border*size;
-        var size = this.calculateSize(); // cellsize
+        size = this.calculateSize(); // cellsize
         var row = Math.floor(y/size);
         var col = Math.floor(x/size);
         var cell = game.cellAt(row, col);
         
         var clockwise = Math.floor(x / (size/2))%2 == 1;
         return {cell:cell, clockwise:clockwise};
-    }
+    };
     
     canvas.onmousemove = function(evt) {
         var cellAndRotation = game.getCellAndRotation(evt);
@@ -179,11 +180,11 @@ game.init = function() {
             cell.dirty = true;
         }
         game.draw();
-    }
+    };
     
     canvas.onmouseout = function() {
         game.mouseout();
-    }
+    };
     
     window.onkeydown = function() {
         var cell = game.mouseOverCell;
@@ -191,7 +192,7 @@ game.init = function() {
             cell.marked = !cell.marked;
             cell.draw(true);
         }
-    }
+    };
     
     this.mouseout = function() {
         if (!game.mouseOverCell) {
@@ -203,7 +204,7 @@ game.init = function() {
         game.mouseOverCell = null;
         game.draw();
         console.log('mouseout');
-    }
+    };
     
     this.updateGame = function() {
         var num = this.updateConnectedComponents();
@@ -212,7 +213,7 @@ game.init = function() {
         if (num === 1) {
             this.winGame();
         }
-    }
+    };
     
     this.winGame = function() {
         var endTime = new Date().getTime();
@@ -231,7 +232,7 @@ game.init = function() {
         //alert('Congratulations, you won the game in ' + timeStamp + ' and with a move penalty of ' + (-this.moves/2) + '. Your score is '+this.calculateScore(diff)+'!');
         postToUrl('/gamewon', {difficulty: this.difficulty, time: timeStamp, moves: moves, points: points})
         //location.reload();
-    }
+    };
     
     this.calculateScore = function(time) {
         var nCells = this.rows * this.cols;
@@ -254,7 +255,7 @@ game.init = function() {
             score += 10;
         }
         return score;
-    }
+    };
     
     this.updateConnectedComponents = function() {
         var num = this.connectedComponents();
@@ -272,10 +273,11 @@ game.init = function() {
         // value is num of preferences
         // (num of colored cells based on the base colors)
         var ccToPrefs = [];
-        for (var i = 0; i < this.cells.length; ++i) {
-            var cell = this.cells[i];
-            var cc = cell.connectedComponent;
-            var color = i%4; // base color: 4 colors repeated
+        var i, cell, cc, color;
+        for (i = 0; i < this.cells.length; ++i) {
+            cell = this.cells[i];
+            cc = cell.connectedComponent;
+            color = i%4; // base color: 4 colors repeated
             // update ccToPrefs
             if (!ccToPrefs[cc]) {
                 ccToPrefs[cc] = [0, 0, 0, 0];
@@ -287,11 +289,11 @@ game.init = function() {
         
         // calculate the "winner" for each connected component
         var ccToColor = []
-        for (var cc = 0; cc < ccToPrefs.length; ++cc) {
+        for (cc = 0; cc < ccToPrefs.length; ++cc) {
             if (!ccToPrefs[cc]) continue;
             ccToColor[cc] = -1;
             var maxVotes = 0;
-            for (var color = 0; color < ccToPrefs[cc].length; ++color) {
+            for (color = 0; color < ccToPrefs[cc].length; ++color) {
                 var votes = ccToPrefs[cc][color]
                 if (!votes) continue;
                 if (votes*voteMultipliers[color] >= maxVotes) {
@@ -304,18 +306,14 @@ game.init = function() {
         }
         
         // update colors
-        for (var i = 0; i < this.cells.length; ++i) {
-            var cell = this.cells[i];
+        for (i = 0; i < this.cells.length; ++i) {
+            cell = this.cells[i];
             cell.connectedComponent = ccToColor[cell.connectedComponent];
         }
         
         this.updateColors();
         return num;
-    }
-    
-    this.preferredColor = function(list) {
-        
-    }
+    };
     
     this.updateColors = function() {
         for (var i = 0; i < this.cells.length; ++i) {
@@ -325,35 +323,35 @@ game.init = function() {
                 cell.dirty = true;
             }
         }
-    }
+    };
     
     this.updateUnmatchedCables = function() {
         for (var i = 0; i < this.cells.length; ++i) {
             this.cells[i].updateUnmatchedCables();
         }
-    }
+    };
     
     this.cellAt = function(row, col, wrapping) {
         if (wrapping) {
-            row = (row+this.rows)%this.rows
-            col = (col+this.cols)%this.cols
+            row = (row+this.rows)%this.rows;
+            col = (col+this.cols)%this.cols;
         }
         if (row < 0 || row >= this.rows || col < 0 || col >= this.cols) {
             return null;
         }
         var i = row * this.cols + col;
         return this.cells[i];
-    }
+    };
     
     this.numOfCells = function() {
         return this.rows * this.cols;
-    }
+    };
     
     this.draw = function(force) {
         for (var i = 0; i < this.cells.length; ++i) {
             this.cells[i].draw(force);
         }
-    }
+    };
     
     this.createGame = function() {
         // create empty cells
@@ -395,7 +393,7 @@ game.init = function() {
             
             emptyCells--;
         }
-    }
+    };
     
     this.isGameOk = function() {
         var diff = this.getDifficulty();
@@ -443,7 +441,7 @@ game.init = function() {
         } else {
             return false;
         }
-    }
+    };
     
     // there might be multiple solutions if the difficulty is equal to 1
     this.getDifficulty = function() {
@@ -483,7 +481,7 @@ game.init = function() {
         }
         
         return difficulty;
-    }
+    };
     
     this.isSolutionCell = function(cell) {
         // try all rotations
@@ -512,7 +510,7 @@ game.init = function() {
             }
         }
         return true;
-    }
+    };
     
     // returns true if it could be a solution
     this.isSolutionCellRotated = function(cell, rotation) {
@@ -540,7 +538,7 @@ game.init = function() {
             }
         }
         return true;
-    }
+    };
     
     this.connectedComponents = function() {
         for (var i = 0; i < this.cells.length; ++i) {
@@ -562,7 +560,7 @@ game.init = function() {
             unmarkedCells -= cc.length;
         }
         return connectedComponent;
-    }
+    };
     
     this.connectedComponent = function(cell, connectedComponent) {
         var cells = [cell];
@@ -599,7 +597,7 @@ game.init = function() {
             cells = cells.concat(cc);
         }
         return cells;
-    }
+    };
     
     this.shuffle = function() {
         this.moves = 0;
@@ -609,7 +607,7 @@ game.init = function() {
         }
         this.originalMoves = this.moves;
         this.updateMoves();
-    }
+    };
     
     this.getRandomColor = function(num) {
         var oknums = [1, 12, 16   , 15];
@@ -619,7 +617,7 @@ game.init = function() {
         var h = (golden_ratio_conjugate*num) + init;
         h -= Math.floor(h);
         return HSLtoRGB([h, 0.99, 0.42]);
-    }
+    };
     
     this.updateWidthAndHeight = function() {
         var width = $(window).width()-10; // TODO change
@@ -633,11 +631,11 @@ game.init = function() {
         canvas.setAttribute('height', height);
         this.width = width;
         this.height = height;
-    }
+    };
     
     this.calculateSize = function() {
         return this.width / (this.cols+this.Border*2);
-    }
+    };
     
     
     this.resize = function() {
@@ -647,7 +645,7 @@ game.init = function() {
             this.cells[i].size = size;
         }
         this.draw(true);
-    }
+    };
     
     this.getTimeStamp = function() {
         var endTime = new Date().getTime();
@@ -660,13 +658,13 @@ game.init = function() {
         }
         var timeStamp = '' + mins + ':' + secsStr;
         return timeStamp
-    }
+    };
     
     var _this = this;
     this.updateTimeDisplay = function() {
         time = document.getElementById('time');
         time.innerHTML = _this.getTimeStamp();
-    }
+    };
     
     this.updateMoves = function() {
         time = document.getElementById('moves');
@@ -677,7 +675,7 @@ game.init = function() {
         if (this.moves <= 0) {
             time.className = 'bad'
         }
-    }
+    };
     
     
     // TODO: where should I put this actually?
@@ -687,7 +685,7 @@ game.init = function() {
             this.colors[num] = this.getRandomColor(num);
         }
         return this.colors[num];
-    }
+    };
     
     var difficulty = window.location.search.replace( "?", "" );
     if (difficulty == 'easy') {
@@ -724,7 +722,7 @@ game.init = function() {
     var game = this;
     $(document).ready($(window).resize(function(){game.resize()}));
     
-}
+};
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -762,22 +760,26 @@ function Cell(row, col, size, game) {
     if (this.row == 0 && !this.game.wrapping) {
         this.canAddCable[this.Up] = false;
     }
+
     if (this.col == 0 && !this.game.wrapping) {
         this.canAddCable[this.Left] = false;
     }
+
     if (this.row == game.rows-1 && !this.game.wrapping) {
         this.canAddCable[this.Down] = false;
     }
+
     if (this.col == game.cols-1 && !this.game.wrapping) {
         this.canAddCable[this.Right] = false;
     }
     
     this.x = function() {
         return this.size*(this.col+game.Border);
-    }
+    };
+
     this.y = function() {
         return this.size*(this.row+game.Border);
-    }
+    };
 
     this.setMoved = function() {
         this.moved = true;
@@ -811,7 +813,7 @@ function Cell(row, col, size, game) {
         // newly connected cell
         n.neighborsCannotConnect();
         return n;
-    }
+    };
     
     this.neighborsCannotConnect = function() {
         for (var dir = 0; dir < 4; ++dir) {
@@ -820,7 +822,7 @@ function Cell(row, col, size, game) {
                 this.neighbor(dir).canAddCable[oppositeDir] = false;
             }
         }
-    }
+    };
     
     // for game construction
     this.isComplete = function() {
