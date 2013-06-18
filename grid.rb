@@ -1,3 +1,5 @@
+# encoding: utf-8
+
 class Cell
   attr_accessor :cables, :can_add
 
@@ -55,7 +57,7 @@ class Cell
       when :up then 0
       when :right then 1
       when :down then 2
-      when :right then 3
+      when :left then 3
       else
         raise ArgumentError
     end

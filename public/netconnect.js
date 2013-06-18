@@ -94,6 +94,8 @@ game.init = function() {
             return;
         }
 
+        if (game.lastClicks.length > 0 && cell != game.lastClicks[0].cell)
+            game.lastClicks[0].cell.unsetMoved();
         cell.setMoved();
         cell.animate(clockwise);
     };
@@ -102,8 +104,6 @@ game.init = function() {
     this.handleNewClick = function(cellAndRotation) {
         game.moves--;
         if (this.lastClicks.length > 0 && cellAndRotation.cell != this.lastClicks[0].cell) {
-            var cell = this.lastClicks[0].cell;
-            cell.unsetMoved();
             this.lastClicks = [];
         }
         this.lastClicks.push(cellAndRotation);
@@ -954,24 +954,25 @@ function Cell(row, col, size, game) {
     };
 
     this.drawMoved = function() {
-        return;
+        if (!this.moved) return;
         var size = this.size;
-        var border = size/20;
+        var b = size/20; // border
+        var b2 = size-b;
+        var s = size/5;  // size
+        this.fillTriangle(b, b,  b+s, b,  b, b+s);
+        this.fillTriangle(b, b2,  b+s, b2,  b, b2-s);
+        this.fillTriangle(b2, b,  b2-s, b,  b2, b+s);
+        this.fillTriangle(b2, b2,  b2-s, b2,  b2, b2-s);
+    };
 
-        var x1, x2, x3;
-        var y1, y2, y3;
-        x1 = border;
-        y1 = border;
-
-
-
-
+    this.fillTriangle = function(x1, y1, x2, y2, x3, y3) {
+        var ctx = this.context;
         ctx.beginPath();
         ctx.moveTo(x1, y1);
         ctx.lineTo(x2, y2);
         ctx.lineTo(x3, y3);
         ctx.closePath();
-        ctx.fillStyle = 'white';
+        ctx.fillStyle = 'rgb(50, 50, 50)';
         ctx.fill();
     };
 
@@ -1072,15 +1073,6 @@ function Cell(row, col, size, game) {
         this.rotateCanvasMatrixAroundCenter(times*Math.PI/2.0);
         this.drawCableUp(unmatched);
         
-        ctx.restore();
-    };
-    
-    this.drawCableWrapping = function(cable, unmatched) {
-        var ctx = this.context;
-        ctx.save();
-        var times = cable;
-        this.rotateCanvasMatrixAroundCenter(times*Math.PI/2.0);
-        this.drawCableWrappingUp(unmatched);
         ctx.restore();
     };
     
