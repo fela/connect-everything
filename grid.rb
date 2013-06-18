@@ -47,6 +47,15 @@ class Cell
     STRINGS[cable_dirs] || '?'
   end
 
+  # binary representation (as a string)
+  def binary
+    res = ''
+    Cell.each_direction do |dir|
+      res << (@cables[dir] ? '1' : '0')
+    end
+    res
+  end
+
   # array of directions in which the cables go
   def cable_dirs
     @cables.keys.select{|d|@cables[d]}.sort_by {|dir| Cell.dir_to_num(dir)}
@@ -222,6 +231,10 @@ class Grid
     res
   end
 
+  def serialize
+    @cells.map(&:binary).join(',')
+  end
+
   # 0 indexed
   def cell_at(row, col)
     if row < 0 || row >= @rows || col < 0 || col >= @cols
@@ -236,4 +249,3 @@ class Grid
   end
 end
 
-puts Grid.new(wrapping: true).to_s

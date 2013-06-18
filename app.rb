@@ -1,6 +1,7 @@
 require 'sinatra'
 require 'haml'
-require 'data_mapper' 
+require 'data_mapper'
+require './grid'
 
 class Score
   include DataMapper::Resource
@@ -197,6 +198,7 @@ end
 
 
 get '/' do
+  @game = Grid.new(wrapping: true)
   haml :index
 end
 
