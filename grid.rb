@@ -237,6 +237,7 @@ class Grid
     {cells: @cells.map(&:binary).join(','),
      rows: @rows,
      cols: @cols,
+     time: 60,
      wrapping: @wrapping}.to_json
   end
 

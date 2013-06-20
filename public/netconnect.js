@@ -256,11 +256,13 @@ game.init = function() {
         //alert('Congratulations, you won the game in ' + timeStamp + ' and with a move penalty of ' + (-this.moves/2) + '. Your score is '+this.calculateScore(diff)+'!');
         postToUrl('/gamewon', {difficulty: this.difficulty, time: timeStamp, moves: moves, points: points})
         //location.reload(); */
+        this.gameActive = false;
         this.level++;
         this.loadGame();
     };
 
     this.gameOver = function() {
+        this.gameActive = false;
         postToUrl('/gameover', {difficulty: this.level, time: '0:00', moves: this.moves, points: 1})
     };
     
@@ -393,8 +395,6 @@ game.init = function() {
         // initializations
         this.cells = [];
         this.lastClicks = [];
-        this.startTime = new Date().getTime();
-        setInterval(_this.updateTimeDisplay, 1000);
 
         // load new game data
         var serializedGame = $.ajax({
@@ -409,6 +409,9 @@ game.init = function() {
         this.cols = serializedGame.cols;
         this.wrapping = serializedGame.wrapping;
         this.difficulty = 'easy'; // TODO remove
+        this.endTime = new Date().getTime() + serializedGame.time*1000;
+        this.gameActive = true;
+        this.updateTimeDisplay();
         var size = this.calculateSize();
         i = 0;
         for (var r = 0; r < this.rows; ++r) {
@@ -423,7 +426,6 @@ game.init = function() {
         this.shuffle();
         this.updateGame();
         this.mouseOverCell = null;
-        var game = this;
     };
 
     this.createGame = function() {
@@ -721,8 +723,8 @@ game.init = function() {
     };
     
     this.getTimeStamp = function() {
-        var endTime = new Date().getTime();
-        var diff = (endTime - this.startTime)/1000; // time in seconds
+        var nowTime = new Date().getTime();
+        var diff = (this.endTime - nowTime)/1000; // time in seconds
         var mins = Math.floor(diff / 60);
         var secs = Math.floor(diff % 60);
         var secsStr = '' + secs;
@@ -730,11 +732,15 @@ game.init = function() {
             secsStr = '0' + secs;
         }
         var timeStamp = '' + mins + ':' + secsStr;
-        return timeStamp
+        return timeStamp;
     };
     
     var _this = this;
     this.updateTimeDisplay = function() {
+        if (new Date().getTime() >  game.endTime) {
+            game.gameOver();
+        }
+        if (!game.gameActive) return;
         time = document.getElementById('time');
         time.innerHTML = _this.getTimeStamp();
     };
@@ -767,6 +773,7 @@ game.init = function() {
     this.updateWidthAndHeight();
     this.loadGame();
     $(document).ready($(window).resize(function(){game.resize()}));
+    setInterval(_this.updateTimeDisplay, 1000);
 };
 
 
