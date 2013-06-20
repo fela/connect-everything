@@ -47,8 +47,6 @@ HSLtoRGB = function (hsl) {
     return "rgb(" + [Math.floor(res[0]), Math.floor(res[1]), Math.floor(res[2])].join(",") + ")";
 };
 
-function arrays_equal(a,b) { return !(a<b || b<a); }
-
 function postToUrl(path, params, method) {
     method = method || "post"; // Set method to post by default, if not specified.
 
@@ -432,48 +430,7 @@ game.init = function() {
         this.mouseOverCell = null;
     };
 
-    this.createGame = function() {
-        // create empty cells
-        this.cells = [];
-        var size = this.calculateSize();
-        for (var r = 0; r < this.rows; ++r) {
-            for (var c = 0; c < this.cols; ++c) {
-                var e = new Cell(r, c, size, this);
-                this.cells.push(e);
-            }
-        }
-        
-        // cells to which cables can be added
-        // empty cells are not present
-        // (except for the first random empty position)
-        // calls get added as soon as they get a cable
-        var initialCell = this.cells.random();
-        initialCell.neighborsCannotConnect();
-        var incompleteCells = [initialCell];
-        var emptyCells = this.rows * this.cols;
-        while (emptyCells > 0 && incompleteCells.length > 0) {
-            var cell = incompleteCells.random();
-            var newCell = cell.addRandomCable();
-            incompleteCells.push(newCell);
-            // remove complete cells
-            var newIncompleteCells = []
-            for (var i = 0; i < incompleteCells.length; ++i) {
-                if (!incompleteCells[i].isComplete()) {
-                    newIncompleteCells.push(incompleteCells[i]);
-                }
-            }
-            incompleteCells = newIncompleteCells;
-            
-            // debugging only
-            //cell.dirty = true;
-            //newCell.dirty = true;
-            //cell.draw();
-            //newCell.draw();
-            
-            emptyCells--;
-        }
-    };
-    
+
     this.isGameOk = function() {
         var diff = this.getDifficulty();
         if (diff[diff.length-1] == 1) {
