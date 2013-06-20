@@ -6,6 +6,7 @@ SHORT TERM
 * second layer of wrapped levels
 * overlay with explanation on start
 * facebook thumbnail
+* handle empty username
 
 LONG TERM
 * rewrite using coffeescript

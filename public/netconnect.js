@@ -134,10 +134,9 @@ game.init = function() {
     
     this.getCellAndRotation = function(event) {
         var pos = getMousePosition(canvas, event);
-        var size = this.calculateSize(); // cellsize
+        var size = this.cellSize; // cellsize
         var x = pos.x-this.Border*size;
         var y = pos.y-this.Border*size;
-        size = this.calculateSize(); // cellsize
         var row = Math.floor(y/size);
         var col = Math.floor(x/size);
         var cell = game.cellAt(row, col);
@@ -371,7 +370,7 @@ game.init = function() {
         this.endTime = new Date().getTime() + serializedGame.time*1000;
         this.gameActive = true;
         this.updateTimeDisplay();
-        var size = this.calculateSize();
+        var size = 1;
         i = 0;
         for (var r = 0; r < this.rows; ++r) {
             for (var c = 0; c < this.cols; ++c) {
@@ -385,6 +384,7 @@ game.init = function() {
         this.shuffle();
         this.updateGame();
         this.mouseOverCell = null;
+        this.resize();
     };
 
 
@@ -603,27 +603,24 @@ game.init = function() {
     };
     
     this.updateWidthAndHeight = function() {
-        var width = $(window).width()-10; // TODO change
+        var width = $(window).width()-200;
         var height = $(window).height()-50;
-        if (width < height) {
-            height = width;
-        } else {
-            width = height;
-        }
-        canvas.setAttribute('width', width);
-        canvas.setAttribute('height', height);
+        this.canvasSize = Math.min(width, height);
         this.width = width;
         this.height = height;
-    };
-    
-    this.calculateSize = function() {
-        return this.width / (this.cols+this.Border*2);
+        var max_width = this.width / (this.cols+this.Border*2);
+        var max_height = this.height / (this.rows+this.Border*2);
+        var cellSize =  Math.min(max_width, max_height);
+
+        canvas.setAttribute('width', cellSize *(this.cols+this.Border*2));
+        canvas.setAttribute('height', cellSize *(this.rows+this.Border*2));
+        this.cellSize = cellSize;
+        return cellSize;
     };
     
     
     this.resize = function() {
-        this.updateWidthAndHeight();
-        var size = this.calculateSize();
+        size = this.updateWidthAndHeight();
         for (var i = 0; i < this.cells.length; ++i) {
             this.cells[i].size = size;
         }
@@ -693,7 +690,6 @@ game.init = function() {
 
     // first time initializations
     this.level = 1;
-    this.updateWidthAndHeight();
     this.loadGame();
     $(document).ready($(window).resize(function(){game.resize()}));
     setInterval(_this.updateTimeDisplay, 1000);
@@ -777,30 +773,7 @@ function Cell(row, col, size, game, binary) {
         this.moved = false;
         this.draw(true);
     };
-    
-    this.addRandomCable = function() {
-        var validDirection = false;
-        var direction = null;
-        if (this.isComplete()) {
-            // error: if this gets displayed
-            // something is wrong in the algorithm!
-            alert('error: cannot add cable to complete cell!!!');
-        }
-        while (!validDirection) {
-            direction = randomDirection();
-            validDirection = this.canAddCable[direction];
-        }
-        this.cables[direction] = true;
-        this.canAddCable[direction] = false;
-        var oppositeDirection = (direction + 2) % 4;
-        var n = this.neighbor(direction);
-        n.cables[oppositeDirection] = true;
-        n.canAddCable[oppositeDirection] = false;
-        // to avoid loops avoid possibility to connect to the
-        // newly connected cell
-        n.neighborsCannotConnect();
-        return n;
-    };
+
     
     this.neighborsCannotConnect = function() {
         for (var dir = 0; dir < 4; ++dir) {
@@ -810,22 +783,7 @@ function Cell(row, col, size, game, binary) {
             }
         }
     };
-    
-    // for game construction
-    this.isComplete = function() {
-        return this.canAddCable[0] == false &&
-               this.canAddCable[1] == false &&
-               this.canAddCable[2] == false &&
-               this.canAddCable[3] == false
-        /*for (el in this.canAddCable) {
-            if (el) {
-                // can add a cable
-                return false;
-            }
-        }
-        // cannot add any cable
-        return true;*/
-    };
+
     
     this.numOfCables = function() {
         var num = 0;
@@ -877,16 +835,16 @@ function Cell(row, col, size, game, binary) {
             var x = null;
             var y = null;
             if (this.row == 0) {
-                this.drawCell(0, this.size*this.game.cols);
+                this.drawCell(0, this.size*this.game.rows);
             }
             if (this.col == 0) {
-                this.drawCell(this.size*this.game.rows, 0);
+                this.drawCell(this.size*this.game.cols, 0);
             }
             if (this.row == this.game.rows-1) {
-                this.drawCell(0, -this.size*this.game.cols);
+                this.drawCell(0, -this.size*this.game.rows);
             }
             if (this.col == this.game.cols-1) {
-                this.drawCell(-this.size*this.game.rows, 0);
+                this.drawCell(-this.size*this.game.cols, 0);
             }
         }
         this.dirty = false;

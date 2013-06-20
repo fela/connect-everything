@@ -173,21 +173,61 @@ end
 class Grid
   LEVELS = [
       {
-        rows: 3,
+        rows: 2,
         cols: 3,
-        time: 2 * 60
-      },
-      {
-          rows: 6,
-          cols: 6,
-          time: 3 * 60
+        time: 5 * 60
       },
       {
           rows: 3,
+          cols: 4,
+          time: 8 * 60
+      },
+      {
+          rows: 4,
+          cols: 6,
+          time: 12 * 60
+      },
+      {
+          rows: 6,
+          cols: 9,
+          time: 20 * 60
+      },
+      {
+          rows: 9,
+          cols: 13,
+          time: 30 * 60
+      },
+      {
+          rows: 2,
           cols: 3,
-          time: 10 * 60,
+          time: 5 * 60,
+          wrapping: true,
+      },
+      {
+          rows: 3,
+          cols: 4,
+          time: 8 * 60,
+          wrapping: true
+      },
+      {
+          rows: 4,
+          cols: 6,
+          time: 12 * 60,
+          wrapping: true
+      },
+      {
+          rows: 6,
+          cols: 9,
+          time: 20 * 60,
+          wrapping: true
+      },
+      {
+          rows: 9,
+          cols: 13,
+          time: 30 * 60,
           wrapping: true
       }
+
   ]
 
   def initialize opt={}
@@ -201,7 +241,7 @@ class Grid
   end
 
   def level_info(level)
-    LEVELS[level-1] || {rows: 10, cols: 10, wrapping: true, time: 10}
+    LEVELS[level-1] || {rows: 9, cols: 13, wrapping: true, time: 30}
   end
 
 

@@ -192,7 +192,7 @@ post '/gameover' do
   @params = params
   p @params
   @name = session[:name]
-  @chart = []#Score.recent_players
+  @chart = Score.recent_players
   haml :submitscore
 end
 
