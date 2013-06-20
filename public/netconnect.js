@@ -748,19 +748,21 @@ game.init = function() {
             game.gameOver();
         }
         if (!game.gameActive) return;
-        time = document.getElementById('time');
-        time.innerHTML = _this.getTimeStamp();
+        $('#time').text(_this.getTimeStamp());
     };
     
     this.updateMoves = function() {
-        time = document.getElementById('moves');
-        time.innerHTML = (this.originalMoves-this.moves)+'/'+this.originalMoves;
-        if (this.moves <= 3) {
-            time.className = 'average'
-        }
-        if (this.moves <= 0) {
-            time.className = 'bad'
-        }
+        $('#moves').text((this.originalMoves-this.moves)+'/'+this.originalMoves);
+
+        var score = Math.round(this.calculateScore()*10)/10;
+
+        $('#score').text(score);
+    };
+
+    this.calculateScore = function() {
+        var score = 5 * (this.level-1);
+        score += 5 * (this.originalMoves-this.moves) / this.originalMoves;
+        return score;
     };
     
     
