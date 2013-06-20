@@ -266,14 +266,14 @@ game.init = function() {
 
     this.gameOver = function() {
         this.disableGame();
-        postToUrl('/gameover', {difficulty: this.level, time: '0:00', moves: this.moves, points: 1})
+        postToUrl('/gameover', {level: this.level, score: this.calculateScore()})
     };
 
     this.disableGame = function() {
         this.gameActive = false;
     };
     
-    this.calculateScore = function(time) {
+    /*this.calculateScore = function(time) {
         var nCells = this.rows * this.cols;
         var difficultyScore = Math.pow(nCells, 2);
         
@@ -288,13 +288,13 @@ game.init = function() {
         var score = multFactor * difficultyScore * timeScore * moveScore;
         // the square root is to decrease unneded differences between low and high scores
         
-        score = Math.sqrt(score)
+        score = Math.sqrt(score);
         if (this.difficulty == 'hard') {
             score *= 1.3;
             score += 10;
         }
         return score;
-    };
+    };*/
     
     this.updateConnectedComponents = function() {
         var num = this.connectedComponents();

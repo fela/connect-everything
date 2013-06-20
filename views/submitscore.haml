@@ -3,23 +3,14 @@
     Game Over!
   .points
     %span.pointsnumber
-      = @params[:points].to_f.round(1)
+      = @params[:score].to_f.round(1)
     points
-  .moves{class: moves_quality(@params[:moves].to_i)}
-    %strong
-      = @params[:moves]
-    wrong move#{@params[:moves].to_i == 1 ? '' : 's'}
   .level
     level:
-    = @params[:difficulty]
-  .time
-    time: 
-    = @params[:time]
+    = @params[:level]
   %form{action: '/submitscore', method: 'post'}
-    %input{name: 'moves', type: 'hidden', value: @params[:moves]}
-    %input{name: 'time', type: 'hidden', value: @params[:time]}
-    %input{name: 'difficulty', type: 'hidden', value: @params[:difficulty]}
-    %input{name: 'points', type: 'hidden', value: @params[:points]}
+    %input{name: 'level', type: 'hidden', value: @params[:level]}
+    %input{name: 'score', type: 'hidden', value: @params[:score]}
     - if @name && @name.size > 0
       %input{id: 'nameinput', name: 'name', type: 'text', value: @name, placeholder: 'Enter your name...', maxlength: '14'}
     - else

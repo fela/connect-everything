@@ -10,9 +10,8 @@ class Score
   property :name,       String
   property :normalized_name, String
   property :time,       String
-  property :moves,      Integer
-  property :difficulty, String
-  property :points,     Float
+  property :level, String
+  property :score,      Float
   property :is_best_score, Boolean, default: false
   property :created_at, DateTime
 
@@ -21,34 +20,17 @@ class Score
   def update_best_score
     # find best score
     best = nil
-    #scores_same_name = Score.all(name: name, difficulty: difficulty);
     scores_same_name = Score.all(normalized_name: normalized_name)
-    #puts normalized_name
-    #puts ':::'
-    #puts scores_same_name
-    #puts '-------------------'
     scores_same_name.each do |s|
-      if best == nil || s.points > best.points
+      if best == nil || s.score > best.score
         best = s
       end
     end
     scores_same_name.each do |s|
       s.is_best_score = (s == best)
       s.save
+      # for db simplification
       #s.destroy if !s.is_best_score
-    end
-  end
-  
-  def self.rename_difficulties
-    all().each do |s|
-      s.difficulty = case s.difficulty
-      when 'easy' then 'easiest'
-      when 'medium' then 'easy'
-      when 'hard' then 'medium'
-      when 'hardest' then 'hard'
-      else nil
-      end
-      s.save
     end
   end
   
@@ -57,7 +39,7 @@ class Score
     limit = opts[:limit] || CHART_SIZE
     
     
-    options = {order: [:points.desc]}
+    options = {order: [:score.desc]}
     if opts[:single_entries]
       options[:is_best_score] = true
     end
@@ -72,8 +54,13 @@ class Score
   
   def self.recent_chart(opts={})
     num_of_plays = limit = CHART_SIZE
-    time = all(order: [:created_at.desc])[num_of_plays].created_at
-    all(:created_at.gt => time, order:[:points.desc])[0...limit]
+    last = all(order: [:created_at.desc])[num_of_plays]
+    if last
+      time = last.created_at
+      all(:created_at.gt => time, order:[:score.desc])#[0...limit]
+    else
+      all(order:[:score.desc])
+    end
   end
   
   def self.recent_games
@@ -88,7 +75,7 @@ class Score
         break if scores.size == CHART_SIZE
       end
     end
-    scores.sort_by{|x|-x.points}
+    scores.sort_by{|x|-x.score}
   end
   
   def self.recent_players
@@ -101,26 +88,11 @@ class Score
       isnewname = !res.has_key?(name)
       break if res.size == limit && isnewname
       
-      if isnewname or s.points > res[name].points
+      if isnewname or s.score > res[name].score
         res[name] = s
       end
     end
-    res.values.sort_by{|x|-x.points}
-  end
-  
-  def update_score
-    mins, secs = time.split(':')
-    mins = mins.to_f + secs.to_f / 60.0
-    time_score = 1.0/mins**0.5
-    
-    n_cells = {'easiest'=>5*5, 'easy'=>7*7, 'medium'=>9*9, 'hard'=>9*9}
-    difficulty_score = n_cells[difficulty]**2
-    
-    move_score = 0.5**(moves**0.6)
-    
-    mult_factor = 0.5
-    self.points = (mult_factor * difficulty_score * time_score * move_score)**0.5
-    save
+    res.values.sort_by{|x|-x.score}
   end
   
   def self.update_scores
@@ -156,7 +128,7 @@ end
 
  
 configure do
-  DataMapper.setup(:default, ENV['DATABASE_URL'] || 'postgres://fela:@localhost/net-connect')
+  DataMapper.setup(:default, ENV['DATABASE_URL'] || 'postgres://fela:@localhost/net-connect2')
   DataMapper.finalize
   #Score.strip_names
   #DataMapper.auto_upgrade!
@@ -216,16 +188,10 @@ get '/privatechart/:order' do
   haml :privatechart
 end
 
-post '/gamewon' do
-  @params = params
-  @name = session[:name]
-  @chart = Score.recent_players
-  haml :submitscore
-end
-
 post '/gameover' do
-  # params contains: difficulty, time, moves and the score
+  # params contains: score, and level
   @params = params
+  p @params
   @name = session[:name]
   @chart = Score.recent_players
   haml :submitscore
@@ -242,15 +208,13 @@ post '/submitscore' do
     show_hiscores
     return
   end
-  
-  time = h params[:time]
-  moves = (h params[:moves]).to_i
-  difficulty = h params[:difficulty]
-  points = params[:points]
+
+  level = h params[:level]
+  score = params[:score]
   
   session[:name] = name
   
-  @newScore = Score.create(name: name, normalized_name: name.downcase, time: time, moves: moves, difficulty: difficulty, points: points, created_at: Time.now)
+  @newScore = Score.create(name: name, normalized_name: name.downcase, level: level, score: score, created_at: Time.now)
   @newScore.save
   @newScore.update_best_score
   

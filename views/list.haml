@@ -7,11 +7,7 @@
       %th
         name
       %th
-        mistakes
-      %th
         level
-      %th
-        time
       %th
         score
     - scores.each_with_index do |s, i|
@@ -19,11 +15,6 @@
         %td.pos #{i+1}.
         %td.name  
           = s.name
-        %td{class: moves_quality(s.moves)}
-          %strong
-            = s.moves
-        %td #{s.difficulty}
-        %td
-          = s.time
+        %td #{s.level}
         %td.points
-          = s.points.round(1)
+          = s.score.round(1)
