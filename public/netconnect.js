@@ -47,6 +47,8 @@ HSLtoRGB = function (hsl) {
     return "rgb(" + [Math.floor(res[0]), Math.floor(res[1]), Math.floor(res[2])].join(",") + ")";
 };
 
+function arrays_equal(a,b) { return !(a<b || b<a); }
+
 function postToUrl(path, params, method) {
     method = method || "post"; // Set method to post by default, if not specified.
 
@@ -80,6 +82,7 @@ Array.prototype.random = function() {
     return this[Math.floor(Math.random() * this.length)];
 };
 
+
 var game = {};
 game.Border = 1/4; // as a proportion of one cell
 game.context = context;
@@ -94,17 +97,35 @@ game.init = function() {
             return;
         }
 
-        if (game.lastClicks.length > 0 && cell != game.lastClicks[0].cell)
+        if (typeof game.lastCell === 'undefined') {
+            game.lastCell = cell;
+            game.oldDistance = cell.normalizeMoves(cell.originalPosition);
+        }
+
+        if (game.lastClicks.length > 0 && cell != game.lastClicks[0].cell) {
             game.lastClicks[0].cell.unsetMoved();
+        }
         cell.setMoved();
         cell.animate(clockwise);
     };
-    canvas.onselectstart = function() {return false;}
-    
+    // disable selection that can get triggered on double mouse click
+    canvas.onselectstart = function() {return false;};
+
+    // called after the animation finishes
     this.handleNewClick = function(cellAndRotation) {
         game.moves--;
-        if (this.lastClicks.length > 0 && cellAndRotation.cell != this.lastClicks[0].cell) {
+        var cell = cellAndRotation.cell;
+        if (this.lastClicks.length > 0 && cell != this.lastClicks[0].cell) {
+            var oldCell = this.lastClicks[0].cell;
+            // TODO: maybe move up to before the animation starts?
+            var newDistance = oldCell.normalizeMoves(oldCell.originalPosition);
+            // equal is bad too, because the cell has moved (lastClicks.length > 0)
+            if (newDistance >= this.oldDistance) {console.log('mistake!')}
             this.lastClicks = [];
+        }
+        if (cell != this.lastCell) {
+            this.lastCell = cell;
+            this.oldDistance = cell.normalizeMoves(cell.originalPosition);
         }
         this.lastClicks.push(cellAndRotation);
         
@@ -139,7 +160,7 @@ game.init = function() {
         for (i = 0; i < nMoves; ++i) {
             this.lastClicks.push({cell: cell, clockwise: clockwise})
         }
-        // give back the clicks that where counted but where undone
+        // give back the moves that where counted but where undone
         var clicksTooMany = nClicks - nMoves;
         this.moves += clicksTooMany;
     };
@@ -352,7 +373,24 @@ game.init = function() {
             this.cells[i].draw(force);
         }
     };
-    
+
+    this.loadGame = function() {
+        var cells = serializedGame.cells.split(',');
+        this.rows = serializedGame.rows;
+        this.cols = serializedGame.cols;
+        this.wrapping = serializedGame.wrapping;
+        this.difficulty = 'easy'; // TODO remove
+        var size = this.calculateSize();
+        var i = 0;
+        for (var r = 0; r < this.rows; ++r) {
+            for (var c = 0; c < this.cols; ++c) {
+                var e = new Cell(r, c, size, this, cells[i]);
+                this.cells.push(e);
+                ++i;
+            }
+        }
+    };
+
     this.createGame = function() {
         // create empty cells
         this.cells = [];
@@ -687,25 +725,6 @@ game.init = function() {
         return this.colors[num];
     };
     
-    var difficulty = window.location.search.replace( "?", "" );
-    if (difficulty == 'easy') {
-        this.rows = 7;
-        this.cols = 7;
-    } else if (difficulty == 'medium'){
-        this.rows = 9;
-        this.cols = 9;
-    } else if (difficulty == 'hard'){
-        this.rows = 9;
-        this.cols = 9;
-        this.wrapping = true;
-    } else {
-        // default easy
-        difficulty = 'easiest'
-        this.rows = 5;
-        this.cols = 5;
-    }
-    this.difficulty = difficulty;
-    
  
    
     this.updateWidthAndHeight();
@@ -713,9 +732,7 @@ game.init = function() {
     this.lastClicks = [];
     this.startTime = new Date().getTime();
     setInterval(_this.updateTimeDisplay, 1000);
-    do {
-        this.createGame();
-    } while (!this.isGameOk());
+    this.loadGame();
     this.shuffle();
     this.updateGame();
     this.mouseOverCell = null;
@@ -731,7 +748,7 @@ game.init = function() {
 // Represents a square
 
 
-function Cell(row, col, size, game) {
+function Cell(row, col, size, game, binary) {
     // testing function, returns mostly false but sometimes true
     this.maybe = function() {
         if (Math.random() > 0.2) {
@@ -747,11 +764,16 @@ function Cell(row, col, size, game) {
     this.moved = false;
     this.game = game;
     // wether there is a cable up right down and left, respectively
-    this.Up = 0
-    this.Right = 1
-    this.Down = 2
-    this.Left = 3
+    this.Up = 0;
+    this.Right = 1;
+    this.Down = 2;
+    this.Left = 3;
     this.cables = [false,false,false,false];
+    this.originalPosition = 0;
+    if (binary) {
+        var cables = binary.split('')
+        this.cables = binary.split('').map(function(val) {return val === '1'; });
+    }
     this.unmatchedCables = [false, false, false, false];
     
     // for game creation
@@ -929,7 +951,8 @@ function Cell(row, col, size, game) {
         }
         this.drawBackground();
         this.drawCables();
-        //this.drawMoved();
+        if (this.normalizeMoves(this.originalPosition) == 0)
+            this.drawMoved();
         this.drawBorder();
         ctx.restore();
         ctx.restore();
@@ -954,7 +977,7 @@ function Cell(row, col, size, game) {
     };
 
     this.drawMoved = function() {
-        if (!this.moved) return;
+        //if (!this.moved) return;
         var size = this.size;
         var b = size/20; // border
         var b2 = size-b;
@@ -1124,11 +1147,13 @@ function Cell(row, col, size, game) {
     };
     
     this.rotateClockwise = function() {
+        this.originalPosition = (this.originalPosition-1) % 4;
         var last = this.cables.pop();
         this.cables.unshift(last);
         this.dirty = true;
     };
     this.rotateCounterClockwise = function() {
+        this.originalPosition = (this.originalPosition+1) % 4;
         var first = this.cables.shift();
         this.cables.push(first);
         this.dirty = true;
@@ -1184,12 +1209,12 @@ function Cell(row, col, size, game) {
         clearInterval(this.animationInterval);
         for (var i = 0; i < this.clicks.length; ++i) {
             var clockwise = this.clicks[i];
+            game.handleNewClick({cell:this, clockwise:clockwise});
             if (clockwise) {
                 this.rotateClockwise();
             } else {
                 this.rotateCounterClockwise();
             }
-            game.handleNewClick({cell:this, clockwise:clockwise});
         }
         this.clicks = [];
         this.rotation = 0;

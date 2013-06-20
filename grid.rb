@@ -1,6 +1,7 @@
 # encoding: utf-8
 
 require 'colorize'
+require 'json'
 
 class Cell
   attr_accessor :cables, :can_add
@@ -171,8 +172,8 @@ end
 
 class Grid
   def initialize opt={}
-    @rows = opt[:rows] || 9
-    @cols = opt[:cols] || 13
+    @rows = opt[:rows] || 3#9
+    @cols = opt[:cols] || 3#13
     @wrapping = opt[:wrapping]
     create_cables
   end
@@ -232,7 +233,10 @@ class Grid
   end
 
   def serialize
-    @cells.map(&:binary).join(',')
+    {cells: @cells.map(&:binary).join(','),
+     rows: @rows,
+     cols: @cols,
+     wrapping: @wrapping}.to_json
   end
 
   # 0 indexed
