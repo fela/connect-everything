@@ -202,6 +202,10 @@ get '/' do
   haml :index
 end
 
+get '/level' do
+  Grid.new(wrapping: true).serialize
+end
+
 get '/rules' do
   haml :rules
 end
@@ -212,7 +216,14 @@ get '/privatechart/:order' do
 end
 
 post '/gamewon' do
-  # params should contain: difficulty, time, moves and the score
+  @params = params
+  @name = session[:name]
+  @chart = Score.recent_players
+  haml :submitscore
+end
+
+post '/gameover' do
+  # params contains: difficulty, time, moves and the score
   @params = params
   @name = session[:name]
   @chart = Score.recent_players

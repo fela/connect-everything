@@ -23,7 +23,7 @@
     - else
       %input{id: 'nameinput', name: 'name', type: 'text', placeholder: 'Enter your name...', maxlength: '14'}
     %br
-    %input.btn.btn-primary{type: 'submit', value:'Add to charts'}
+
 
 %br
 = partial(:list, title: 'recent players', scores: @chart) unless @chart.empty?

@@ -119,8 +119,11 @@ game.init = function() {
             var oldCell = this.lastClicks[0].cell;
             // TODO: maybe move up to before the animation starts?
             var newDistance = oldCell.normalizeMoves(oldCell.originalPosition);
-            // equal is bad too, because the cell has moved (lastClicks.length > 0)
-            if (newDistance >= this.oldDistance) {console.log('mistake!')}
+            // equal dfistance makes you lose too,
+            // because the cell has moved (lastClicks.length > 0)
+            if (newDistance >= this.oldDistance) {
+                this.gameOver();
+            }
             this.lastClicks = [];
         }
         if (cell != this.lastCell) {
@@ -237,7 +240,7 @@ game.init = function() {
     };
     
     this.winGame = function() {
-        var endTime = new Date().getTime();
+        /*var endTime = new Date().getTime();
         var diff = (endTime - this.startTime)/1000; // time in seconds
         var mins = Math.floor(diff / 60);
         var secs = Math.floor(diff % 60);
@@ -252,7 +255,12 @@ game.init = function() {
         //console.log('aaaaaaaaaaaaaaa');
         //alert('Congratulations, you won the game in ' + timeStamp + ' and with a move penalty of ' + (-this.moves/2) + '. Your score is '+this.calculateScore(diff)+'!');
         postToUrl('/gamewon', {difficulty: this.difficulty, time: timeStamp, moves: moves, points: points})
-        //location.reload();
+        //location.reload(); */
+        this.loadGame();
+    };
+
+    this.gameOver = function() {
+        postToUrl('/gameover', {difficulty: 'tmp', time: '0:00', moves: this.moves, points: 1})
     };
     
     this.calculateScore = function(time) {
@@ -309,7 +317,7 @@ game.init = function() {
         var voteMultipliers = [1, 1, 1, 1];
         
         // calculate the "winner" for each connected component
-        var ccToColor = []
+        var ccToColor = [];
         for (cc = 0; cc < ccToPrefs.length; ++cc) {
             if (!ccToPrefs[cc]) continue;
             ccToColor[cc] = -1;
@@ -375,6 +383,19 @@ game.init = function() {
     };
 
     this.loadGame = function() {
+        // initializations
+        this.cells = [];
+        this.lastClicks = [];
+        this.startTime = new Date().getTime();
+        setInterval(_this.updateTimeDisplay, 1000);
+
+        // load new game data
+        var serializedGame = $.ajax({
+            dataType: "json",
+            type: "GET",
+            url: '/level',
+            async: false
+        }).responseJSON;
         var cells = serializedGame.cells.split(',');
         this.rows = serializedGame.rows;
         this.cols = serializedGame.cols;
@@ -389,6 +410,12 @@ game.init = function() {
                 ++i;
             }
         }
+
+
+        this.shuffle();
+        this.updateGame();
+        this.mouseOverCell = null;
+        var game = this;
     };
 
     this.createGame = function() {
@@ -724,19 +751,12 @@ game.init = function() {
         }
         return this.colors[num];
     };
-    
- 
-   
+
+
+
+    // first time initializations
     this.updateWidthAndHeight();
-    this.cells = [];
-    this.lastClicks = [];
-    this.startTime = new Date().getTime();
-    setInterval(_this.updateTimeDisplay, 1000);
     this.loadGame();
-    this.shuffle();
-    this.updateGame();
-    this.mouseOverCell = null;
-    var game = this;
     $(document).ready($(window).resize(function(){game.resize()}));
     
 };
