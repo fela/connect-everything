@@ -136,7 +136,7 @@ configure do
   #Score.strip_names
   #DataMapper.auto_upgrade!
   #Score.update_best_scores
-  DataMapper.auto_migrate!
+  #DataMapper.auto_migrate!
   #Score.remove_blacklisted
   DataMapper::Model.raise_on_save_failure = true
   
@@ -150,9 +150,9 @@ helpers do
   alias_method :h, :escape_html
   
   def show_hiscores
-    @overAllChart = Score.chart(single_entries: true)
-    @recentChart = Score.recent_chart
-    @recentPeopleChart = Score.recent_players
+    @overAllChart = []#Score.chart(single_entries: true)
+    @recentChart = []#Score.recent_chart
+    @recentPeopleChart = []#Score.recent_players
     haml :hiscores
   end
   
