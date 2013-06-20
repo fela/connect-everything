@@ -1,15 +1,19 @@
-* remember difficulty level
-* protect from wrong scores
-* try layout different from square
+
+SHORT TERM
+* fix animation craziness on level win
+* layout different from square
+* level with different sizes/scores
+* first layer of wrapped levels
+* second layer of wrapped levels
+* overlay with explanation on start
+* facebook thumbnail
+
+LONG TERM
 * choose colors as to minimize change
-* decrease time weight in score (square root)
 * avoid double entries in the highscore list
 * anonimous scores
-* hardest level
-* overlay with explanation on start
 * optimize for mobile
   - unique click
   - menu
   - adapt to direction
   - test
-* facebook tumbnail

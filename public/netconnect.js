@@ -669,15 +669,18 @@ game.init = function() {
     
     this.updateMoves = function() {
         $('#moves').text((this.originalMoves-this.moves)+'/'+this.originalMoves);
+        this.updateScore();
+    };
 
+    this.updateScore = function() {
         var score = Math.round(this.calculateScore()*10)/10;
-
         $('#score').text(score);
     };
 
     this.calculateScore = function() {
         var score = 5 * (this.level-1);
-        score += 5 * (this.originalMoves-this.moves) / this.originalMoves;
+        var movesDone = (this.originalMoves-this.moves)-this.lastClicks.length;
+        score += 5 * movesDone / this.originalMoves;
         return score;
     };
 
@@ -1171,7 +1174,7 @@ function Cell(row, col, size, game, binary) {
         this.rotation = 0;
         this.endRotation = 0;
         this.isRotating = false;
-        game.updateMoves();
+        if (game.gameActive) game.updateMoves();
         game.updateGame();
         this.draw(true);
     };
