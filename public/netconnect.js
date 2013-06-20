@@ -243,30 +243,27 @@ game.init = function() {
     };
     
     this.winGame = function() {
-        /*var endTime = new Date().getTime();
-        var diff = (endTime - this.startTime)/1000; // time in seconds
-        var mins = Math.floor(diff / 60);
-        var secs = Math.floor(diff % 60);
-        var secsStr = '' + secs;
-        if (secs < 10) {
-            secsStr = '0' + secs;
-        }
-        var timeStamp = '' + mins + ':' + secsStr;
-        var moves = -this.moves/2;
-        var points = this.calculateScore(diff);
-        //console.log(this.getDifficulty());
-        //console.log('aaaaaaaaaaaaaaa');
-        //alert('Congratulations, you won the game in ' + timeStamp + ' and with a move penalty of ' + (-this.moves/2) + '. Your score is '+this.calculateScore(diff)+'!');
-        postToUrl('/gamewon', {difficulty: this.difficulty, time: timeStamp, moves: moves, points: points})
-        //location.reload(); */
+        if (!game.gameActive) {return;} // don't win after the game over animation
         this.disableGame();
         this.level++;
         this.loadGame();
     };
 
     this.gameOver = function() {
-        this.disableGame();
-        postToUrl('/gameover', {level: this.level, score: this.calculateScore()})
+        game.disableGame();
+        for (var i = 0; i < this.cells.length; ++i) {
+            var cell = this.cells[i];
+            var origPos = cell.originalPosition;
+            var cw = origPos > 0;
+            for (var j = 0; j < Math.abs(origPos); ++j) {
+                cell.animate(cw);
+            }
+        }
+
+        var score = this.calculateScore();
+        var level = this.level;
+        setTimeout( function() {
+            postToUrl('/gameover', {level: level, score: score})}, 3000);
     };
 
     this.disableGame = function() {
@@ -1038,7 +1035,7 @@ function Cell(row, col, size, game, binary) {
     };
 
     this.drawMoved = function() {
-        if (!this.moved) return;
+        if (!this.moved || !game.gameActive) return;
         var size = this.size;
         var b = size/20; // border
         var b2 = size-b;
@@ -1083,6 +1080,7 @@ function Cell(row, col, size, game, binary) {
     };
     
     this.drawHover = function() {
+        if (!game.gameActive) {return}
         if (this.hover === null || typeof this.hover === 'undefined') {
             return;
         }

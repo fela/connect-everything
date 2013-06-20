@@ -14,8 +14,9 @@ span#time {
     color: white;
 }
 
-span.moves {
+span#score {
     color: white;
+    font-weight: bold;
 }
 
 table {
