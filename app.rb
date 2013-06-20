@@ -150,7 +150,7 @@ helpers do
   alias_method :h, :escape_html
   
   def show_hiscores
-    @overAllChart = []#Score.chart(single_entries: true)
+    @overAllChart = Score.chart(single_entries: true)
     @recentChart = []#Score.recent_chart
     @recentPeopleChart = []#Score.recent_players
     haml :hiscores
