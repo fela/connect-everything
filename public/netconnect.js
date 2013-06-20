@@ -1177,7 +1177,7 @@ function Cell(row, col, size, game, binary) {
     };
     
     this.neighbor = function(direction) {
-        var wrapping = this.game.wrapping
+        var wrapping = this.game.wrapping;
         switch (direction) {
             case this.Up:
                 return this.game.cellAt(row-1, col, wrapping);

@@ -19,14 +19,7 @@
     %script{src: 'jquery.color-2.1.2.min.js'}
     %script{src: 'jquery.easing.min.js'}
     =yield
-    play
-    = succeed ',' do
-      %a{:href => '/?easiest'} easiest
-    = succeed ',' do
-      %a{:href => '/?easy'} easy
-    %a{:href => '/?medium'} medium
-    or
-    %a{:href => '/?hard'} hard
+    %a{:href => '/'} new game
     |
     %a{:href => '/rules'} rules
     |
