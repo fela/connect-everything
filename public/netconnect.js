@@ -269,9 +269,9 @@ game.init = function() {
         postToUrl('/gameover', {difficulty: this.level, time: '0:00', moves: this.moves, points: 1})
     };
 
-    this.disableGame = funciton() {
-        this.gameAcrive = false;
-    }
+    this.disableGame = function() {
+        this.gameActive = false;
+    };
     
     this.calculateScore = function(time) {
         var nCells = this.rows * this.cols;
