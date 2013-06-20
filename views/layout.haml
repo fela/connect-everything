@@ -16,6 +16,8 @@
         var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
       })();
     %script{src: "http://code.jquery.com/jquery.js"}
+    %script{src: 'jquery.color-2.1.2.min.js'}
+    %script{src: 'jquery.easing.min.js'}
     =yield
     play
     = succeed ',' do

@@ -744,11 +744,22 @@ game.init = function() {
     
     var _this = this;
     this.updateTimeDisplay = function() {
-        if (new Date().getTime() >  game.endTime) {
-            game.gameOver();
-        }
         if (!game.gameActive) return;
-        $('#time').text(_this.getTimeStamp());
+        if (new Date().getTime() >=  game.endTime) {
+            game.disableGame();
+            $('#time').animate( {
+                    backgroundColor: 'red'
+                },
+                {
+                duration: 2000,
+                easing: 'easeOutBounce',
+                complete: function() {
+                    game.gameOver();
+                }
+            });
+        } else {
+            $('#time').text(_this.getTimeStamp());
+        }
     };
     
     this.updateMoves = function() {
@@ -1002,8 +1013,7 @@ function Cell(row, col, size, game, binary) {
         }
         this.drawBackground();
         this.drawCables();
-        if (this.normalizeMoves(this.originalPosition) == 0)
-            this.drawMoved();
+        this.drawMoved();
         this.drawBorder();
         ctx.restore();
         ctx.restore();
@@ -1028,7 +1038,7 @@ function Cell(row, col, size, game, binary) {
     };
 
     this.drawMoved = function() {
-        //if (!this.moved) return;
+        if (!this.moved) return;
         var size = this.size;
         var b = size/20; // border
         var b2 = size-b;
