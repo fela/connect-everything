@@ -133,7 +133,7 @@ configure do
   #Score.strip_names
   #DataMapper.auto_upgrade!
   #Score.update_best_scores
-  DataMapper.auto_migrate!
+  #DataMapper.auto_migrate!
   #Score.remove_blacklisted
   DataMapper::Model.raise_on_save_failure = true
   
