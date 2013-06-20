@@ -5,48 +5,6 @@ var context = canvas.getContext('2d');
 
 
 
-HSLtoRGB = function (hsl) {
-    // in JS 1.7 use: var [h, s, l] = hsl;
-    var h = hsl[0],
-        s = hsl[1],
-        l = hsl[2],
-
-    r, g, b,
-
-    hue2rgb = function (p, q, t){
-        if (t < 0) {
-            t += 1;
-        }
-        if (t > 1) {
-            t -= 1;
-        }
-        if (t < 1/6) {
-            return p + (q - p) * 6 * t;
-        }
-        if (t < 1/2) {
-            return q;
-        }
-        if (t < 2/3) {
-            return p + (q - p) * (2/3 - t) * 6;
-        }
-        return p;
-    };
-
-    if (s === 0) {
-        r = g = b = l; // achromatic
-    } else {
-        var
-        q = l < 0.5 ? l * (1 + s) : l + s - l * s,
-        p = 2 * l - q;
-        r = hue2rgb(p, q, h + 1/3);
-        g = hue2rgb(p, q, h);
-        b = hue2rgb(p, q, h - 1/3);
-    }
-    var res = [r * 0xFF, g * 0xFF, b * 0xFF];
-
-    return "rgb(" + [Math.floor(res[0]), Math.floor(res[1]), Math.floor(res[2])].join(",") + ")";
-};
-
 function postToUrl(path, params, method) {
     method = method || "post"; // Set method to post by default, if not specified.
 
@@ -645,16 +603,6 @@ game.init = function() {
         this.updateMoves();
     };
     
-    this.getRandomColor = function(num) {
-        var oknums = [1, 12, 16   , 15];
-        num = oknums[num % oknums.length];
-        var golden_ratio_conjugate = 0.618033988749895;
-        var init = 0.65;
-        var h = (golden_ratio_conjugate*num) + init;
-        h -= Math.floor(h);
-        return HSLtoRGB([h, 0.99, 0.42]);
-    };
-    
     this.updateWidthAndHeight = function() {
         var width = $(window).width()-10; // TODO change
         var height = $(window).height()-50;
@@ -732,13 +680,14 @@ game.init = function() {
     
     
     // TODO: where should I put this actually?
-    this.colors = []
-    this.color = function(num) {
+    this.colors = ["rgb(84,213,1)", "rgb(213,85,1)", "rgb(1,164,213)", "rgb(213,1,102)"];
+    /*this.color = function(num) {
         if (!this.colors[num]) {
             this.colors[num] = this.getRandomColor(num);
+            console.log(this.colors);
         }
         return this.colors[num];
-    };
+    };*/
 
 
 
@@ -918,7 +867,6 @@ function Cell(row, col, size, game, binary) {
     
     this.context = game.context;
     this.dirty = true;
-    this.color = 0;
     this.draw = function(force){
         if (this.dirty == false && !force) {
             return;
@@ -1096,7 +1044,7 @@ function Cell(row, col, size, game, binary) {
     
     this.drawEndPoint = function() {
         var ctx = this.context;
-        ctx.fillStyle = this.game.color(this.color);
+        ctx.fillStyle = this.game.colors[this.color];
         ctx.beginPath();
         var centerX = this.size / 2;
         var centerY = this.size / 2;
@@ -1123,7 +1071,7 @@ function Cell(row, col, size, game, binary) {
         //var centerY = this.y() + this.size / 2;
         var ctx = this.context;
         ctx.lineWidth = lineWidth;
-        ctx.fillStyle = this.game.color(this.color);
+        ctx.fillStyle = this.game.colors[this.color];
         ctx.beginPath();
         ctx.fillRect(centerX-lineWidth/2, 0, lineWidth, this.size/2+lineWidth/2);
         //ctx.moveTo(centerX, this.y);
@@ -1138,17 +1086,6 @@ function Cell(row, col, size, game, binary) {
             ctx.closePath();
             ctx.fill();
         }
-    };
-    
-    this.drawCableWrappingUp = function(unmatched) {
-        var lineWidth = this.size/5;
-        var centerX = this.size / 2;
-        ctx = this.context;
-        ctx.fillStyle = this.game.color(this.color);
-        ctx.beginPath();
-        ctx.fillRect(centerX-lineWidth/2, this.y()-lineWidth, lineWidth, lineWidth);
-        ctx.closePath();
-        ctx.fill();
     };
     
     // helper function
