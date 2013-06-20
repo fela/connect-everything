@@ -647,7 +647,9 @@ game.init = function() {
     var _this = this;
     this.updateTimeDisplay = function() {
         if (!game.gameActive) return;
+
         if (new Date().getTime() >=  game.endTime) {
+            // game over handling and animation
             game.disableGame();
             $('#time').animate( {
                     backgroundColor: 'red'
@@ -660,6 +662,7 @@ game.init = function() {
                 }
             });
         } else {
+            // default behaviour
             $('#time').text(_this.getTimeStamp());
         }
     };
@@ -677,17 +680,12 @@ game.init = function() {
         score += 5 * (this.originalMoves-this.moves) / this.originalMoves;
         return score;
     };
-    
-    
-    // TODO: where should I put this actually?
-    this.colors = ["rgb(84,213,1)", "rgb(213,85,1)", "rgb(1,164,213)", "rgb(213,1,102)"];
-    /*this.color = function(num) {
-        if (!this.colors[num]) {
-            this.colors[num] = this.getRandomColor(num);
-            console.log(this.colors);
-        }
-        return this.colors[num];
-    };*/
+
+
+    this.colors = ["rgb(84,213,1)",
+                   "rgb(213,85,1)",
+                   "rgb(1,164,213)",
+                   "rgb(213,1,102)"];
 
 
 
