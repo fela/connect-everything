@@ -171,12 +171,37 @@ end
 
 
 class Grid
+  LEVELS = [
+      {
+        rows: 3,
+        cols: 3,
+        time: 2 * 60
+      },
+      {
+          rows: 6,
+          cols: 6,
+          time: 3 * 60
+      },
+      {
+          rows: 3,
+          cols: 3,
+          time: 10 * 60,
+          wrapping: true
+      }
+  ]
+
   def initialize opt={}
-    level = opt[:level] || 1
-    @rows = opt[:rows] || level+2
-    @cols = opt[:cols] || level+2
-    @wrapping = opt[:wrapping]
+    p opt
+    level_info = level_info(opt[:level])
+    @rows = level_info[:rows]
+    @cols = level_info[:cols]
+    @wrapping = level_info[:wrapping] == true
+    @time = level_info[:time]
     create_cables
+  end
+
+  def level_info(level)
+    LEVELS[level-1] || {rows: 10, cols: 10, wrapping: true, time: 10}
   end
 
 
@@ -237,7 +262,7 @@ class Grid
     {cells: @cells.map(&:binary).join(','),
      rows: @rows,
      cols: @cols,
-     time: 10,
+     time: @time,
      wrapping: @wrapping}.to_json
   end
 
