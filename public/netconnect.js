@@ -89,6 +89,9 @@ game.context = context;
 game.init = function() {
     
     canvas.onclick = function(evt) {
+        if (!game.gameActive) {
+            return;
+        }
         var cellAndRotation = game.getCellAndRotation(evt);
         var cell = cellAndRotation.cell;
         var clockwise = cellAndRotation.clockwise;
@@ -256,15 +259,19 @@ game.init = function() {
         //alert('Congratulations, you won the game in ' + timeStamp + ' and with a move penalty of ' + (-this.moves/2) + '. Your score is '+this.calculateScore(diff)+'!');
         postToUrl('/gamewon', {difficulty: this.difficulty, time: timeStamp, moves: moves, points: points})
         //location.reload(); */
-        this.gameActive = false;
+        this.disableGame();
         this.level++;
         this.loadGame();
     };
 
     this.gameOver = function() {
-        this.gameActive = false;
+        this.disableGame();
         postToUrl('/gameover', {difficulty: this.level, time: '0:00', moves: this.moves, points: 1})
     };
+
+    this.disableGame = funciton() {
+        this.gameAcrive = false;
+    }
     
     this.calculateScore = function(time) {
         var nCells = this.rows * this.cols;
