@@ -203,7 +203,8 @@ get '/' do
 end
 
 get '/level' do
-  Grid.new(wrapping: true).serialize
+  level = params['level'].to_i
+  Grid.new(level: level).serialize
 end
 
 get '/rules' do

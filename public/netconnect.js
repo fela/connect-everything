@@ -256,11 +256,12 @@ game.init = function() {
         //alert('Congratulations, you won the game in ' + timeStamp + ' and with a move penalty of ' + (-this.moves/2) + '. Your score is '+this.calculateScore(diff)+'!');
         postToUrl('/gamewon', {difficulty: this.difficulty, time: timeStamp, moves: moves, points: points})
         //location.reload(); */
+        this.level++;
         this.loadGame();
     };
 
     this.gameOver = function() {
-        postToUrl('/gameover', {difficulty: 'tmp', time: '0:00', moves: this.moves, points: 1})
+        postToUrl('/gameover', {difficulty: this.level, time: '0:00', moves: this.moves, points: 1})
     };
     
     this.calculateScore = function(time) {
@@ -383,6 +384,12 @@ game.init = function() {
     };
 
     this.loadGame = function() {
+        var i;
+        if (this.cells) {
+            for (i = 0; i < this.cells.length; ++i) {
+                this.cells[i].destroy();
+            }
+        }
         // initializations
         this.cells = [];
         this.lastClicks = [];
@@ -392,6 +399,7 @@ game.init = function() {
         // load new game data
         var serializedGame = $.ajax({
             dataType: "json",
+            data: {level: this.level},
             type: "GET",
             url: '/level',
             async: false
@@ -402,7 +410,7 @@ game.init = function() {
         this.wrapping = serializedGame.wrapping;
         this.difficulty = 'easy'; // TODO remove
         var size = this.calculateSize();
-        var i = 0;
+        i = 0;
         for (var r = 0; r < this.rows; ++r) {
             for (var c = 0; c < this.cols; ++c) {
                 var e = new Cell(r, c, size, this, cells[i]);
@@ -755,10 +763,10 @@ game.init = function() {
 
 
     // first time initializations
+    this.level = 1;
     this.updateWidthAndHeight();
     this.loadGame();
     $(document).ready($(window).resize(function(){game.resize()}));
-    
 };
 
 
@@ -769,6 +777,13 @@ game.init = function() {
 
 
 function Cell(row, col, size, game, binary) {
+
+    this.destroy = function() {
+        if (this.animationInterval)
+            clearInterval(this.animationInterval);
+        this.draw = function(){}; // do not draw anymore
+    };
+
     // testing function, returns mostly false but sometimes true
     this.maybe = function() {
         if (Math.random() > 0.2) {

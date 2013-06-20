@@ -172,8 +172,9 @@ end
 
 class Grid
   def initialize opt={}
-    @rows = opt[:rows] || 3#9
-    @cols = opt[:cols] || 3#13
+    level = opt[:level] || 1
+    @rows = opt[:rows] || level+2
+    @cols = opt[:cols] || level+2
     @wrapping = opt[:wrapping]
     create_cables
   end
