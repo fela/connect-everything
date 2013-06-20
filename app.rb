@@ -152,7 +152,7 @@ helpers do
   def show_hiscores
     @overAllChart = Score.chart(single_entries: true)
     @recentChart = Score.recent_chart
-    @recentPeopleChart = []#Score.recent_players
+    @recentPeopleChart = Score.recent_players
     haml :hiscores
   end
   
