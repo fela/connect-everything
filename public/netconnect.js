@@ -58,7 +58,7 @@ game.init = function() {
 
         if (typeof game.lastCell === 'undefined') {
             game.lastCell = cell;
-            game.oldDistance = cell.normalizeMoves(cell.originalPosition);
+            game.oldDistance = cell.absNormalizeMoves(cell.originalPosition);
         }
 
         if (game.lastClicks.length > 0 && cell != game.lastClicks[0].cell) {
@@ -72,24 +72,26 @@ game.init = function() {
 
     // called after the animation finishes
     this.handleNewClick = function(cellAndRotation) {
+        if (!game.gameActive) return;
         game.moves--;
         var cell = cellAndRotation.cell;
         if (this.lastClicks.length > 0 && cell != this.lastClicks[0].cell) {
             var oldCell = this.lastClicks[0].cell;
             // TODO: maybe move up to before the animation starts?
-            var newDistance = oldCell.normalizeMoves(oldCell.originalPosition);
+            var newDistance = oldCell.absNormalizeMoves(oldCell.originalPosition);
             // equal dfistance makes you lose too,
             // because the cell has moved (lastClicks.length > 0)
             if (newDistance >= this.oldDistance) {
 
+                game.disableGame();
                 oldCell.reset(0.6);
-                setTimeout(function() {game.gameOver()}, 1000);
+                setTimeout(function() {game.gameOver()}, 2000);
             }
             this.lastClicks = [];
         }
         if (cell != this.lastCell) {
             this.lastCell = cell;
-            this.oldDistance = cell.normalizeMoves(cell.originalPosition);
+            this.oldDistance = cell.absNormalizeMoves(cell.originalPosition);
         }
         this.lastClicks.push(cellAndRotation);
         
@@ -112,7 +114,7 @@ game.init = function() {
         if (nMoves == 3 || nMoves == -3) clockwise = !clockwise;
         
         var cell = this.lastClicks[0].cell;
-        nMoves = cell.normalizeMoves(nMoves);
+        nMoves = cell.absNormalizeMoves(nMoves);
 
         if (nMoves == 0)
             cell.unsetMoved();
@@ -1098,13 +1100,13 @@ function Cell(row, col, size, game, binary) {
     };
     
     this.rotateClockwise = function() {
-        this.originalPosition = (this.originalPosition-1) % 4;
+        this.originalPosition = this.normalizeMoves(this.originalPosition-1);
         var last = this.cables.pop();
         this.cables.unshift(last);
         this.dirty = true;
     };
     this.rotateCounterClockwise = function() {
-        this.originalPosition = (this.originalPosition+1) % 4;
+        this.originalPosition = this.normalizeMoves(this.originalPosition+1);
         var first = this.cables.shift();
         this.cables.push(first);
         this.dirty = true;
@@ -1206,7 +1208,7 @@ function Cell(row, col, size, game, binary) {
             this.rotateClockwise();
         }
         
-        var moves = this.normalizeMoves(rotations);
+        var moves = this.absNormalizeMoves(rotations);
         
         if (moves != 0) {
             this.dirty = true;
@@ -1218,13 +1220,16 @@ function Cell(row, col, size, game, binary) {
     // and returns the number of equivalent moves from 0 to 2
     // (the result is independent of the direction)
     this.normalizeMoves = function(moves) {
-        moves = (moves + 4) % 4;
-        if (moves == 3) moves = 1;
+        moves = (moves + 5) % 4 - 1; // (from -1 to +2)
         var nCables = this.numOfCables();
         if (nCables == 0 || nCables == 4) moves = 0;
         if (this.isStraightCable()) moves %= 2;
         return moves;
     };
+
+    this.absNormalizeMoves = function(moves) {
+        return Math.abs(this.normalizeMoves(moves));
+    }
 }
 
 
