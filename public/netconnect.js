@@ -81,7 +81,9 @@ game.init = function() {
             // equal dfistance makes you lose too,
             // because the cell has moved (lastClicks.length > 0)
             if (newDistance >= this.oldDistance) {
-                this.gameOver();
+
+                oldCell.reset(0.6);
+                setTimeout(function() {game.gameOver()}, 1000);
             }
             this.lastClicks = [];
         }
@@ -208,12 +210,7 @@ game.init = function() {
     this.gameOver = function() {
         game.disableGame();
         for (var i = 0; i < this.cells.length; ++i) {
-            var cell = this.cells[i];
-            var origPos = cell.originalPosition;
-            var cw = origPos > 0;
-            for (var j = 0; j < Math.abs(origPos); ++j) {
-                cell.animate(cw);
-            }
+             this.cells[i].reset(0.6);
         }
 
         var score = this.calculateScore();
@@ -1121,10 +1118,10 @@ function Cell(row, col, size, game, binary) {
     this.framesLeft = 100;
     this.clicks = []; // boolean clockwise or not
     
-    this.animate = function(clockwise) {
+    this.animate = function(clockwise, time) {
         this.isRotating = true;
         this.clicks.push(clockwise);
-        var time = 0.3;
+        time = time || 0.3;
         
         // update rotations
         var diff = Math.PI/2;
@@ -1177,6 +1174,14 @@ function Cell(row, col, size, game, binary) {
         if (game.gameActive) game.updateMoves();
         game.updateGame();
         this.draw(true);
+    };
+
+    this.reset = function(time) {
+        var origPos = this.originalPosition;
+        var cw = origPos > 0;
+        for (var j = 0; j < Math.abs(origPos); ++j) {
+            this.animate(cw, time);
+        }
     };
     
     this.neighbor = function(direction) {

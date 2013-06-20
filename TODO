@@ -9,6 +9,7 @@ SHORT TERM
 * facebook thumbnail
 
 LONG TERM
+* rewrite using coffeescript
 * choose colors as to minimize change
 * avoid double entries in the highscore list
 * anonimous scores
