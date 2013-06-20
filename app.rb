@@ -92,10 +92,7 @@ class Score
         res[name] = s
       end
     end
-    puts 'before'
-    p res
     res.values.sort_by{|x|-x.score}
-    puts 'after'
   end
   
   def self.update_scores
