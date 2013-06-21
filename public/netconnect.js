@@ -534,16 +534,19 @@ game.init = function() {
     };
     
     this.connectedComponents = function() {
-        for (var i = 0; i < this.cells.length; ++i) {
-            this.cells[i].connectedComponent = null;
-        }
+        var i, cell;
         var unmarkedCells = this.numOfCells();
+        for (i = 0; i < this.cells.length; ++i) {
+            cell = this.cells[i]
+            cell.connectedComponent = null;
+            if (cell.numOfCables() == 0) unmarkedCells--;
+        }
         var connectedComponent = 0;
         while (unmarkedCells > 0) {
             connectedComponent++;
             // find first unmarked cell
-            var cell = null;
-            for (var i = 0; i < this.cells.length; ++i) {
+            cell = null;
+            for (i = 0; i < this.cells.length; ++i) {
                 if (this.cells[i].connectedComponent === null) {
                     cell = this.cells[i];
                     break;
