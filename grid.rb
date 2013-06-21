@@ -4,7 +4,7 @@ require 'colorize'
 require 'json'
 
 class Cell
-  attr_accessor :cables, :can_add
+  attr_accessor :cables, :can_add, :marked
 
   DIRECTIONS = [:up, :right, :down, :left]
   def initialize opt
@@ -75,6 +75,7 @@ class Cell
   end
 
   def self.num_to_dir num
+    num = (num + 4) % 4
     case num
       when 0 then :up
       when 1 then :right
@@ -118,6 +119,10 @@ class Cell
 
   def straight_line?
     cable_dirs == [:up, :down] || cable_dirs == [:right, :left]
+  end
+
+  def end_point?
+    n_cables == 1
   end
 
   def n_cables
@@ -216,7 +221,7 @@ class Grid
           cols: 3,
           time: 5 * 60,
           wrapping: true,
-          options: {empty: 2}
+          options: {empty: 3}
       },
       {
           rows: 3,
@@ -251,14 +256,19 @@ class Grid
 
   attr_accessor :options
   def initialize opt={}
-    #level_info = level_info(opt[:level])
-    level_info = level_info(8)
+    level = opt[:level] + 5
+    level_info = level_info(level)
     @rows = level_info[:rows]
     @cols = level_info[:cols]
     @wrapping = level_info[:wrapping] == true
-    @options = level_info[:options]
+    @options = level_info[:options] || {}
     @time = level_info[:time]
+    p level
     create_cables
+    until valid?
+      puts 'invalid grid, creating new one'
+      create_cables
+    end
   end
 
   def level_info(level)
@@ -318,6 +328,68 @@ class Grid
     end
     neighbors
   end
+
+  def valid?
+    @cells.each {|c|c.marked = false}
+    n_unmarked = @cells.size
+    # find all solvable cells
+    # than iteratively mark them to find more solvable cells
+    while n_unmarked > 0
+      to_be_marked = []
+      @cells.each do |c|
+        next if c.marked
+        if solvable_cell?(c)
+          to_be_marked << c
+        end
+      end
+      if to_be_marked.size == 0
+        return false
+      end
+      to_be_marked.each {|c| c.marked = true}
+      n_unmarked -= to_be_marked.size
+    end
+    true
+  end
+
+  def solvable_cell?(cell)
+    # checks the valid rotations
+    # if there are more than one, the cell is not (yet) solvable
+
+    # current rotation is certainly possible, but isn't added
+    possible_rotations = []
+    1.upto(3) {|rot| possible_rotations << rot if possible_rotation?(cell, rot)}
+
+    # check that all solutions are equivalent
+    # if not return false
+    possible_rotations.each do |rot|
+      Cell.each_direction do |dir|
+        rotated_dir = Cell.num_to_dir( Cell.dir_to_num(dir) - rot )
+        return false if cell.cables[dir] != cell.cables[rotated_dir]
+      end
+    end
+    true
+  end
+
+  def possible_rotation?(cell, rot)
+    Cell.each_direction do |dir|
+      rotated_dir = Cell.num_to_dir( Cell.dir_to_num(dir) - rot )
+      is_cable = cell.cables[rotated_dir]
+      n = cell.neighbor(dir)
+      if !n && is_cable
+        return false
+      end
+      if n && n.marked
+        cable_neighbor = n.cables[Cell.opposite(dir)]
+        return false if is_cable != cable_neighbor
+      end
+      # special case: two terminal cells cannot be connected
+      if n && is_cable && cell.end_point? && n.end_point?
+        return false
+      end
+    end
+    true
+  end
+
 
   def to_s
     res = ''
