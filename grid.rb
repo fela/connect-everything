@@ -217,11 +217,11 @@ class Grid
           time: 30 * 60
       },
       {
-          rows: 2,
+          rows: 3,
           cols: 3,
           time: 5 * 60,
           wrapping: true,
-          options: {empty: 3}
+          options: {empty: 3, stright_lines: true}
       },
       {
           rows: 3,
@@ -256,7 +256,7 @@ class Grid
 
   attr_accessor :options
   def initialize opt={}
-    level = opt[:level] + 5
+    level = opt[:level]
     level_info = level_info(level)
     @rows = level_info[:rows]
     @cols = level_info[:cols]
