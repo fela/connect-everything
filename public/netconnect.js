@@ -1167,7 +1167,17 @@ function Cell(row, col, size, game, binary) {
     };
     
     this.shuffle = function() {
-        var rotations = Math.floor(Math.random()*4);
+        var rotations;
+
+        if (this.isStraightCable()) {
+            // change in 70% of cases
+            rotations = 1;
+            if (Math.random() < 0.3) rotations = 0;
+        } else {
+            // change in 85% of cases
+            rotations = Math.floor((Math.random()*4)) + 1;
+            if (Math.random() < 0.15) rotation = 0;
+        }
         for (var i = 0; i < rotations; ++i) {
             this.rotateClockwise();
         }
