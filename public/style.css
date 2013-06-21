@@ -15,6 +15,7 @@ span#time {
 }
 
 span#score {
+    font-size: 3em;
     color: white;
     font-weight: bold;
 }

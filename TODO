@@ -1,5 +1,6 @@
 
 SHORT TERM
+* updateConnectedComponent has a bug with empty cells (and the code is probably buggy)
 * layout different from square
 * level with different sizes/scores
 * first layer of wrapped levels

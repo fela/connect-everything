@@ -3,19 +3,22 @@
     %td
       %canvas{id: 'gamecanvas', height: 0, width: 0}
     %td.gameinfo
-      score:
+      v2 beta
+      %br
+      %br
       %strong
         %span#score
           0
+      /%br
+      /%br
+      /moves:
+      /%strong
+      /  %span#moves.moves
+      /    0/0
       %br
-      moves:
-      %strong
-        %span#moves.moves
-          0/0
-      %br
-      time:
       %span#time
         0:00
+      remaining
 
 /%script
 /  serializedGame = #{@game.serialize};

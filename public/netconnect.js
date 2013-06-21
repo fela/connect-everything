@@ -664,7 +664,7 @@ game.init = function() {
     };
     
     this.updateMoves = function() {
-        $('#moves').text((this.originalMoves-this.moves)+'/'+this.originalMoves);
+        //$('#moves').text((this.originalMoves-this.moves)+'/'+this.originalMoves);
         this.updateScore();
     };
 

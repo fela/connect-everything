@@ -116,6 +116,14 @@ class Cell
     end
   end
 
+  def straight_line?
+    cable_dirs == [:up, :down] || cable_dirs == [:right, :left]
+  end
+
+  def n_cables
+    cable_dirs.size
+  end
+
 
   ###
   ###  grid creation helpers
@@ -137,6 +145,12 @@ class Cell
     # find a random direction
     valid_directions = DIRECTIONS.select{|dir| @can_add[dir]}
     dir = valid_directions[rand valid_directions.size]
+    if n_cables == 1 && @game.options[:straight_lines]
+      opp_dir = Cell.opposite(cable_dirs[0])
+      if @can_add[opp_dir] && rand < 0.7
+        dir = opp_dir
+      end
+    end
 
     add_cable dir
   end
@@ -202,40 +216,47 @@ class Grid
           cols: 3,
           time: 5 * 60,
           wrapping: true,
+          options: {empty: 2}
       },
       {
           rows: 3,
           cols: 4,
           time: 8 * 60,
-          wrapping: true
+          wrapping: true,
+          options: {cross: true, straight_lines: true, empty: 2}
       },
       {
           rows: 4,
           cols: 6,
           time: 12 * 60,
-          wrapping: true
+          wrapping: true,
+          options: {cross: true, straight_lines: true, empty: 2}
       },
       {
           rows: 6,
           cols: 9,
           time: 20 * 60,
-          wrapping: true
+          wrapping: true,
+          options: {cross: true, straight_lines: true, empty: 2}
       },
       {
           rows: 9,
           cols: 13,
           time: 30 * 60,
-          wrapping: true
+          wrapping: true,
+          options: {cross: true, straight_lines: true, empty: 2}
       }
 
   ]
 
+  attr_accessor :options
   def initialize opt={}
-    p opt
-    level_info = level_info(opt[:level])
+    #level_info = level_info(opt[:level])
+    level_info = level_info(8)
     @rows = level_info[:rows]
     @cols = level_info[:cols]
     @wrapping = level_info[:wrapping] == true
+    @options = level_info[:options]
     @time = level_info[:time]
     create_cables
   end
@@ -272,8 +293,14 @@ class Grid
     # random initial cell
     cell0 = @cells[rand @cells.size]
     cell0.neighbors_cannot_connect
-    incomplete_cells = [cell0]
-    empty_cells = @rows * @cols
+    empty_cells = @rows * @cols - 1
+    if @options[:cross]
+      incomplete_cells = create_cross(cell0)
+      empty_cells -= 4
+    else
+      incomplete_cells = [cell0]
+    end
+    empty_cells -= @options[:empty] if @options[:empty]
     while empty_cells > 0 && incomplete_cells.length > 0 do
       cell = incomplete_cells[rand incomplete_cells.size]
       new_cell = cell.add_random_cable
@@ -282,6 +309,14 @@ class Grid
       incomplete_cells.select! {|c| !c.complete?}
       empty_cells -= 1
     end
+  end
+
+  def create_cross(cell)
+    neighbors = []
+    Cell.each_direction do |dir|
+      neighbors << cell.add_cable(dir)
+    end
+    neighbors
   end
 
   def to_s
