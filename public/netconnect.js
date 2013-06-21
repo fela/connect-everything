@@ -539,7 +539,10 @@ game.init = function() {
         for (i = 0; i < this.cells.length; ++i) {
             cell = this.cells[i]
             cell.connectedComponent = null;
-            if (cell.numOfCables() == 0) unmarkedCells--;
+            if (cell.numOfCables() == 0) {
+                cell.connectedComponent = 1; // assign arbitrary color
+                unmarkedCells--;
+            }
         }
         var connectedComponent = 0;
         while (unmarkedCells > 0) {
