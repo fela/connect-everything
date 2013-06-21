@@ -3,6 +3,27 @@
 require 'colorize'
 require 'json'
 
+
+class Hash
+  # {fist: 1, second: 3}.weighted_random
+  # will return 1 with 25% prob and 2 with 75%
+  def weighted_random
+    sum = values.inject(0) {|x, y| x + y}
+    selection = rand * sum
+    s = 0
+    keys.each do |k|
+      s += self[k]
+      if s >= selection
+        return k
+      end
+    end
+    # just in case
+    p "warning: weighted_random didn't return any element"
+    keys.last
+  end
+end
+
+
 class Cell
   attr_accessor :cables, :can_add, :marked
 
@@ -97,6 +118,13 @@ class Cell
     end
   end
 
+  def rotate(rotation)
+    dirs = cable_dirs.map {|d| Cell.num_to_dir((Cell.dir_to_num(d) + rotation))}
+    Cell.each_direction do |dir|
+      @cables[dir] = dirs.include? dir
+    end
+  end
+
   def neighbor dir
     row, col = @row, @col
     case dir
@@ -129,6 +157,17 @@ class Cell
     cable_dirs.size
   end
 
+  def rotations
+    if n_cables == 0 || n_cables == 4
+      [0]
+    elsif
+      straight_line?
+      [0, 1]
+    else
+      [0, 1, 2, 3]
+    end
+  end
+
 
   ###
   ###  grid creation helpers
@@ -149,15 +188,24 @@ class Cell
     raise 'cannot add any more cables' if complete?
     # find a random direction
     valid_directions = DIRECTIONS.select{|dir| @can_add[dir]}
-    dir = valid_directions[rand valid_directions.size]
+    dirs = {}
+    valid_directions.each {|d| dirs[d] = 1}
+
     if n_cables == 1 && @game.options[:straight_lines]
       opp_dir = Cell.opposite(cable_dirs[0])
-      if @can_add[opp_dir] && rand < 0.7
-        dir = opp_dir
+      if dirs[opp_dir]
+        dirs[opp_dir] = 6
       end
     end
-
-    add_cable dir
+    if n_cables == 1 && @game.options[:hard]
+      # try to avoid straight lines
+      opp_dir = Cell.opposite(cable_dirs[0])
+      if dirs[opp_dir]
+        # disabled: seems to just create more invalid games
+        #dirs[opp_dir] = 0.8
+      end
+    end
+    add_cable dirs.weighted_random
   end
 
   def add_cable(dir)
@@ -221,7 +269,7 @@ class Grid
           cols: 3,
           time: 5 * 60,
           wrapping: true,
-          options: {empty: 3, stright_lines: true}
+          options: {empty: 3, straight_lines: true}
       },
       {
           rows: 3,
@@ -235,21 +283,56 @@ class Grid
           cols: 6,
           time: 12 * 60,
           wrapping: true,
-          options: {cross: true, straight_lines: true, empty: 2}
+          options: {cross: true, straight_lines: true, empty: 3}
       },
       {
           rows: 6,
           cols: 9,
           time: 20 * 60,
           wrapping: true,
-          options: {cross: true, straight_lines: true, empty: 2}
+          options: {cross: true, straight_lines: true, empty: 4}
       },
       {
           rows: 9,
           cols: 13,
           time: 30 * 60,
           wrapping: true,
-          options: {cross: true, straight_lines: true, empty: 2}
+          options: {cross: true, straight_lines: true, empty: 5}
+      },
+      {
+          rows: 3,
+          cols: 3,
+          time: 5 * 60,
+          wrapping: true,
+          options: {hard: true}
+      },
+      {
+          rows: 3,
+          cols: 4,
+          time: 8 * 60,
+          wrapping: true,
+          options: {hard: true}
+      },
+      {
+          rows: 4,
+          cols: 6,
+          time: 12 * 60,
+          wrapping: true,
+          options: {hard: true}
+      },
+      {
+          rows: 6,
+          cols: 9,
+          time: 20 * 60,
+          wrapping: true,
+          options: {hard: true}
+      },
+      {
+          rows: 9,
+          cols: 13,
+          time: 30 * 60,
+          wrapping: true,
+          options: {hard: true}
       }
 
   ]
@@ -263,16 +346,17 @@ class Grid
     @wrapping = level_info[:wrapping] == true
     @options = level_info[:options] || {}
     @time = level_info[:time]
-    p level
     create_cables
+    invalid_games = 0
     until valid?
-      puts 'invalid grid, creating new one'
+      invalid_games += 1
       create_cables
     end
+    puts "level #{level} recreated #{invalid_games} times"
   end
 
   def level_info(level)
-    LEVELS[level-1] || {rows: 9, cols: 13, wrapping: true, time: 30}
+    LEVELS[level-1] || {rows: 9, cols: 13, wrapping: true, time: 50, options: {hard: true}}
   end
 
 
@@ -288,11 +372,6 @@ class Grid
 
   def create_cables
     create_empty_grid
-    #@cells.each do |c|
-    #  Cell.each_direction do |dir|
-    #    c.cables[dir] = true if rand > 0.5
-    #  end
-    #end
 
     @cells.each do |cell|
       Cell.each_direction do |dir|
@@ -312,13 +391,34 @@ class Grid
     end
     empty_cells -= @options[:empty] if @options[:empty]
     while empty_cells > 0 && incomplete_cells.length > 0 do
-      cell = incomplete_cells[rand incomplete_cells.size]
+      cell = random_cell(incomplete_cells)
       new_cell = cell.add_random_cable
       incomplete_cells << new_cell
       # remove completed cells
       incomplete_cells.select! {|c| !c.complete?}
       empty_cells -= 1
     end
+  end
+
+  def random_cell list
+    cells = {}
+    list.each do |c|
+      cells[c] = if !@options[:hard]
+                   1
+                 elsif c.end_point?
+                   6
+                 elsif c.straight_line?
+                   20
+                 elsif c.n_cables == 2
+                   # L shaped
+                   1
+                 elsif c.n_cables == 3
+                   0.2
+                 else
+                   1
+                 end
+    end
+    cells.weighted_random
   end
 
   def create_cross(cell)
@@ -329,45 +429,116 @@ class Grid
     neighbors
   end
 
+
   def valid?
+    puts '--------------------------------------------------------------------'
+    puts '----------------------- start of validation ------------------------'
     @cells.each {|c|c.marked = false}
-    n_unmarked = @cells.size
-    # find all solvable cells
-    # than iteratively mark them to find more solvable cells
-    while n_unmarked > 0
-      to_be_marked = []
-      @cells.each do |c|
-        next if c.marked
-        if solvable_cell?(c)
-          to_be_marked << c
+    mark_valid_cells
+    if all_marked
+      !@options[:hard]
+    elsif !@options[:hard]
+      false
+    else
+      while true
+        c = find_secondary_move
+        return false if !c
+        c.marked = true
+        mark_valid_cells
+        if all_marked
+          return true
         end
       end
-      if to_be_marked.size == 0
-        return false
-      end
-      to_be_marked.each {|c| c.marked = true}
-      n_unmarked -= to_be_marked.size
     end
-    true
+  end
+
+  def find_secondary_move
+    @cells.each do |c|
+      next if c.marked
+      return c if secondary_move?(c)
+    end
+    nil # no move found
+  end
+
+  def secondary_move?(c)
+    rotations = possible_rotations(c)
+    puts "starting finding secondary move #{rotations.size} possibilities to check"
+    rotations.select! do |rot|
+      c.rotate(rot)
+      # save marked cells
+      marked_cells = {}
+      @cells.each {|x| marked_cells[x] = x.marked}
+
+      c.marked = true
+
+      mark_valid_cells
+      contradiction = false
+      @cells.each do |cell|
+        if cell.marked && !possible_rotation?(cell, 0)
+          contradiction = true
+          break
+        end
+      end
+      puts '-'
+      puts self
+      puts "contradiction: #{contradiction}"
+
+      # undo_marks
+      @cells.each {|x| x.marked = marked_cells[x]}
+      c.rotate(-rot)
+
+      # if contradiction continue (return true if for all)
+      # if solution return false (multiple solutions)
+      # if still there is uncertainty return false
+      !contradiction
+    end
+    # rotate the cell and return true if only one possible rotation is valid
+    if rotations.size == 1
+      c.rotate(rotations[0])
+      true
+    else
+      false
+    end
+  end
+
+  def mark_valid_cells
+    # find all solvable cells
+    # than iteratively mark them to find more solvable cells
+    puts 'marking'
+    puts self
+    puts
+    while true
+      new_cells_found = false
+      @cells.each do |c|
+        if !c.marked && solvable_cell?(c)
+          new_cells_found = true
+          c.marked = true
+        end
+      end
+      return if !new_cells_found
+      puts self
+      puts
+    end
+  end
+
+  def all_marked
+    @cells.all?(&:marked)
   end
 
   def solvable_cell?(cell)
     # checks the valid rotations
-    # if there are more than one, the cell is not (yet) solvable
-
-    # current rotation is certainly possible, but isn't added
-    possible_rotations = []
-    1.upto(3) {|rot| possible_rotations << rot if possible_rotation?(cell, rot)}
-
-    # check that all solutions are equivalent
-    # if not return false
-    possible_rotations.each do |rot|
-      Cell.each_direction do |dir|
-        rotated_dir = Cell.num_to_dir( Cell.dir_to_num(dir) - rot )
-        return false if cell.cables[dir] != cell.cables[rotated_dir]
-      end
+    # HACK: size 0 is a contradiction (no real need to continue marking...)
+    rotations = possible_rotations(cell)
+    if rotations.size == 1
+      cell.rotate(rotations[0])
     end
-    true
+    rotations.size <= 1
+  end
+
+  def possible_rotations(cell)
+    cell.rotations.select do |rot|
+      possible_rotation?(cell, rot)
+    end
   end
 
   def possible_rotation?(cell, rot)
@@ -397,7 +568,7 @@ class Grid
       @cols.times do |c|
         cell = cell_at(r, c)
         s = cell.to_s
-        s = s.on_red if cell.complete?
+        s = s.on_red if cell.marked
         res << s
       end
       res << "\n"
