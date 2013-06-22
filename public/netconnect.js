@@ -80,9 +80,10 @@ game.init = function() {
             var oldCell = this.lastClicks[0].cell;
             // TODO: maybe move up to before the animation starts?
             var newDistance = oldCell.absNormalizeMoves(oldCell.originalPosition);
-            // equal dfistance makes you lose too,
+            // equal distance makes you lose too,
             // because the cell has moved (lastClicks.length > 0)
-            if (newDistance >= this.oldDistance) {
+            // 0.5 added to make rounding problems are avoided
+            if (newDistance+0.5 >= this.oldDistance) {
 
                 game.disableGame();
                 oldCell.reset(0.6);
@@ -206,6 +207,7 @@ game.init = function() {
         if (!game.gameActive) {return;} // don't win after the game over animation
         this.disableGame();
         this.level++;
+        $('.level-num').text(this.level);
         this.loadGame();
     };
 
@@ -394,6 +396,7 @@ game.init = function() {
         this.updateGame();
         this.mouseOverCell = null;
         this.resize();
+        this.updateScore();
     };
 
 
@@ -614,7 +617,6 @@ game.init = function() {
             this.moves += cell.shuffle();
         }
         this.originalMoves = this.moves;
-        this.updateScore();
     };
     
     this.updateWidthAndHeight = function() {
