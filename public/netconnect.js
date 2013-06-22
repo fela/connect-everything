@@ -353,6 +353,9 @@ game.init = function() {
             data: {level: this.level},
             success: function(response) {
                 game.finishLoadingGame(response)
+            },
+            error: function() {
+                game.gameOver();
             }
         });
     };

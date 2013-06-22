@@ -339,7 +339,7 @@ class Grid
 
   attr_accessor :options
   def initialize opt={}
-    level = opt[:level] + 10
+    level = opt[:level]
     level_info = level_info(level)
     @rows = level_info[:rows]
     @cols = level_info[:cols]
