@@ -3,8 +3,11 @@
     %td
       %canvas{id: 'gamecanvas', height: 0, width: 0}
     %td.gameinfo
-      v2 beta
-      %br
+
+      .level
+        Level
+        %span.level-num
+          1
       %br
       %strong
         %span#score
@@ -18,7 +21,8 @@
       %br
       %span#time
         0:00
-      remaining
+      %br
+      v2 beta
 
 /%script
 /  serializedGame = #{@game.serialize};

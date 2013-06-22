@@ -19,6 +19,10 @@ span#score {
     color: white;
     font-weight: bold;
 }
+span.level-num {
+    font-weight: bold;
+    color: white
+}
 
 table {
     margin: 0 auto;
