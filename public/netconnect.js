@@ -913,14 +913,22 @@ function Cell(row, col, size, game, binary) {
 
     this.drawMoved = function() {
         if (!this.moved || !game.gameActive) return;
-        var size = this.size;
+
+        var ctx = this.context;
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.6)';
+        ctx.beginPath();
+        ctx.rect(0, 0, this.size, this.size);
+        ctx.closePath();
+        ctx.fill();
+
+        /*var size = this.size;
         var b = size/20; // border
         var b2 = size-b;
         var s = size/5;  // size
         this.fillTriangle(b, b,  b+s, b,  b, b+s);
         this.fillTriangle(b, b2,  b+s, b2,  b, b2-s);
         this.fillTriangle(b2, b,  b2-s, b,  b2, b+s);
-        this.fillTriangle(b2, b2,  b2-s, b2,  b2, b2-s);
+        this.fillTriangle(b2, b2,  b2-s, b2,  b2, b2-s);*/
     };
 
     this.fillTriangle = function(x1, y1, x2, y2, x3, y3) {
