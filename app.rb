@@ -139,6 +139,7 @@ configure do
   
   #Score.update_scores
   #Score.rename_difficulties
+  Score.all().each {|s| s.destroy if s.name != 'fela'}
   enable :sessions
 end
 
