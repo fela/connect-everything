@@ -63,6 +63,7 @@ game.init = function() {
 
         if (game.lastClicks.length > 0 && cell != game.lastClicks[0].cell) {
             game.lastClicks[0].cell.unsetMoved();
+            game.updateScore();
         }
         cell.setMoved();
         cell.animate(clockwise);
@@ -613,7 +614,7 @@ game.init = function() {
             this.moves += cell.shuffle();
         }
         this.originalMoves = this.moves;
-        this.updateMoves();
+        this.updateScore();
     };
     
     this.updateWidthAndHeight = function() {
@@ -675,11 +676,6 @@ game.init = function() {
             // default behaviour
             $('#time').text(_this.getTimeStamp());
         }
-    };
-    
-    this.updateMoves = function() {
-        //$('#moves').text((this.originalMoves-this.moves)+'/'+this.originalMoves);
-        this.updateScore();
     };
 
     this.updateScore = function() {
@@ -1153,7 +1149,6 @@ function Cell(row, col, size, game, binary) {
         this.rotation = 0;
         this.endRotation = 0;
         this.isRotating = false;
-        if (game.gameActive) game.updateMoves();
         game.updateGame();
         this.draw(true);
     };
