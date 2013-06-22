@@ -225,8 +225,8 @@ game.init = function() {
             var dialog = $('#game-over');
             dialog.find('.points-number').text(score);
             dialog.find('.level-number').text(level);
-            dialog.find('#level').val(score);
-            dialog.find('#score').val(level);
+            dialog.find('input[name=score]').val(score);
+            dialog.find('input[name=level]').val(level);
             dialog.modal();
         }, 1000);
     };
