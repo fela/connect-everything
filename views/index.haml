@@ -24,6 +24,38 @@
       %br
       v2 beta
 
-/%script
-/  serializedGame = #{@game.serialize};
+#game-over.modal.hide.fade
+  .modal-header
+    / no idea why the following doesn't work :(
+    %button.close{type: 'button', data: {dismiss: 'modal'}, aria: {hidden: 'true'} } &times;
+    %h3 Game Over!
+  .modal-body
+    .points
+      %span.points-number 0
+      points
+    .level
+      level
+      %span.level-number
+        0
+
+    %form#game-over-form{action: '/submitscore', method: 'post'}
+      %input{name: 'level', type: 'hidden', value: '0'}
+      %input{name: 'score', type: 'hidden', value: '0'}
+      - if @name && @name.size > 0
+        %input#nameinput{name: 'name', type: 'text', value: @name, placeholder: 'Enter your name...', maxlength: '14'}
+      - else
+        %input#nameinput{name: 'name', type: 'text', placeholder: 'Enter your name...', maxlength: '14'}
+      %br
+  .modal-footer
+    %button.btn{ type: 'button', data: {dismiss: 'modal'}, aria: {hidden: 'true'}} Cancel
+    %button.btn.btn-primary{type: 'submit', form: 'game-over-form'} Add to charts
+
+:javascript
+  $('#game-over').on('shown', function() {
+    text_input = $('#nameinput');
+    text_input.focus();
+    if (text_input.value != '') {
+        text_input.select ();
+    }
+  })
 %script{src: "netconnect.js"}

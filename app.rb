@@ -171,6 +171,7 @@ end
 
 
 get '/' do
+  @name = session[:name]
   haml :index
 end
 

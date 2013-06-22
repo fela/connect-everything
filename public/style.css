@@ -1,8 +1,22 @@
 body {
     background-color: black;
+    background-image: none;
     text-align: center;
     font-size: 14px;
     color: #E8E8E8;
+}
+
+.modal {
+    border-radius: 6px;
+    border-bottom-style: solid;
+}
+
+.modal-header{
+    border-bottom-color: #434343;
+}
+
+.modal-footer {
+    background-color: #434343;
 }
 
 canvas {
@@ -72,10 +86,6 @@ tr.newscore {
     margin-top: 30px;
 }
 
-#submitscore {
-    margin-top: 100px;
-}
-
 input {
     margin-top: 5px;
 }
@@ -83,12 +93,16 @@ input {
 #container {
     text-align: center;
 }
+
 .text {
     text-align: left;
 }
 
-.pointsnumber {
+.points-number {
     font-size: 25px;
+}
+.level-number {
+    font-weight: bold;
 }
 
 

@@ -218,9 +218,15 @@ game.init = function() {
         }
 
         var score = this.calculateScore();
+        score = Math.round(score * 10)/10; // round to 1 digit
         var level = this.level;
+        game.updateScore();
         setTimeout( function() {
-            postToUrl('/gameover', {level: level, score: score})}, 3000);
+            var dialog = $('#game-over');
+            dialog.find('.points-number').text(score);
+            dialog.find('.level-number').text(level);
+            dialog.modal();
+        }, 1000);
     };
 
     this.disableGame = function() {
