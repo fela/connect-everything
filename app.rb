@@ -175,6 +175,7 @@ end
 
 
 get '/' do
+  @chart = Score.recent_players
   @name = session[:name]
   haml :index
 end

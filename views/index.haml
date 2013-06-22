@@ -46,6 +46,10 @@
       - else
         %input#nameinput{name: 'name', type: 'text', placeholder: 'Enter your name...', maxlength: '14'}
       %br
+
+  %br
+  = partial(:list, title: 'recent players', scores: @chart) unless @chart.empty?
+
   .modal-footer
     %button.btn{ type: 'button', data: {dismiss: 'modal'}, aria: {hidden: 'true'}} Cancel
     %button.btn.btn-primary{type: 'submit', form: 'game-over-form'} Add to charts
