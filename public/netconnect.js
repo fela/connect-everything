@@ -344,6 +344,20 @@ game.init = function() {
     };
 
     this.loadGame = function() {
+
+
+        // load new game data
+        $.ajax({
+            dataType: "json",
+            url: '/level',
+            data: {level: this.level},
+            success: function(response) {
+                game.finishLoadingGame(response)
+            }
+        });
+    };
+
+    this.finishLoadingGame = function(serializedGame) {
         var i;
         if (this.cells) {
             for (i = 0; i < this.cells.length; ++i) {
@@ -353,15 +367,6 @@ game.init = function() {
         // initializations
         this.cells = [];
         this.lastClicks = [];
-
-        // load new game data
-        var serializedGame = $.ajax({
-            dataType: "json",
-            data: {level: this.level},
-            type: "GET",
-            url: '/level',
-            async: false
-        }).responseJSON;
         var cells = serializedGame.cells.split(',');
         this.rows = serializedGame.rows;
         this.cols = serializedGame.cols;
