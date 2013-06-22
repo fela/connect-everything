@@ -175,7 +175,9 @@ end
 
 get '/level' do
   level = params['level'].to_i
-  Grid.new(level: level).serialize
+  files = Dir.glob("levels/#{level}/*")
+  filename = files[rand files.length]
+  File.read(filename)
 end
 
 get '/rules' do

@@ -78,6 +78,14 @@ class Cell
     res
   end
 
+  def load_from_binary(binary)
+    cables = binary.split('')
+    Cell.each_direction do |dir|
+      cable = cables.shift
+      @cables[dir] = cable == 1
+    end
+  end
+
   # array of directions in which the cables go
   def cable_dirs
     @cables.keys.select{|d|@cables[d]}.sort_by {|dir| Cell.dir_to_num(dir)}
@@ -337,13 +345,30 @@ class Grid
 
   ]
 
+  def self.n_levels
+    LEVELS.size
+  end
+
+  # to be readable by the cells
   attr_accessor :options
-  def initialize opt={}
+
+  private
+  def initialize
+  end
+
+  public
+  def self.generate(opt={})
+    grid = self.new
+    grid.generate_level(opt)
+    grid
+  end
+
+  def generate_level(opt={})
     level = opt[:level]
     level_info = level_info(level)
     @rows = level_info[:rows]
     @cols = level_info[:cols]
-    @wrapping = level_info[:wrapping] == true
+    @wrapping = level_info[:wrapping]
     @options = level_info[:options] || {}
     @time = level_info[:time]
     create_cables
@@ -352,7 +377,8 @@ class Grid
       invalid_games += 1
       create_cables
     end
-    puts "level #{level} recreated #{invalid_games} times"
+    @verbose = opt[:verbose]
+    puts "level #{level} recreated #{invalid_games} times" if @verbose
   end
 
   def level_info(level)
@@ -431,8 +457,10 @@ class Grid
 
 
   def valid?
-    puts '--------------------------------------------------------------------'
-    puts '----------------------- start of validation ------------------------'
+    if @verbose
+      puts '-------------------------------------------------------------------'
+      puts '---------------------- start of validation ------------------------'
+    end
     @cells.each {|c|c.marked = false}
     mark_valid_cells
     if all_marked
@@ -462,7 +490,9 @@ class Grid
 
   def secondary_move?(c)
     rotations = possible_rotations(c)
-    puts "starting finding secondary move #{rotations.size} possibilities to check"
+    if @verbose
+      puts "search for secondary move #{rotations.size} possibilities to check"
+    end
     rotations.select! do |rot|
       c.rotate(rot)
       # save marked cells
@@ -479,9 +509,11 @@ class Grid
           break
         end
       end
-      puts '-'
-      puts self
-      puts "contradiction: #{contradiction}"
+      if @verbose
+        puts '-'
+        puts self
+        puts "contradiction: #{contradiction}"
+      end
 
       # undo_marks
       @cells.each {|x| x.marked = marked_cells[x]}
@@ -504,9 +536,11 @@ class Grid
   def mark_valid_cells
     # find all solvable cells
     # than iteratively mark them to find more solvable cells
-    puts 'marking'
-    puts self
-    puts
+    if @verbose
+      puts 'marking'
+      puts self
+      puts
+    end
     while true
       new_cells_found = false
       @cells.each do |c|
@@ -516,8 +550,10 @@ class Grid
         end
       end
       return if !new_cells_found
-      puts self
-      puts
+      if @verbose
+        puts self
+        puts
+      end
     end
   end
 
