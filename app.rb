@@ -78,8 +78,7 @@ class Score
     scores.sort_by{|x|-x.score}
   end
   
-  def self.recent_players
-    limit = CHART_SIZE
+  def self.recent_players(limit=CHART_SIZE)
     res = {} # name to highest score
     all(order: [:created_at.desc]).each do |s|
       # end after 10th name
@@ -175,7 +174,7 @@ end
 
 
 get '/' do
-  @chart = Score.recent_players
+  @chart = Score.recent_players(5)
   @name = session[:name]
   haml :index
 end
