@@ -234,29 +234,7 @@ game.init = function() {
     this.disableGame = function() {
         this.gameActive = false;
     };
-    
-    /*this.calculateScore = function(time) {
-        var nCells = this.rows * this.cols;
-        var difficultyScore = Math.pow(nCells, 2);
-        
-        var minutes = time / 60;
-        var timeScore = 1 / Math.sqrt(minutes);
-        
-        var movePenalty = -this.moves/2;
-        var moveScore = Math.pow(1/2, Math.pow(movePenalty, 0.6));
-        
-        // combine the the scores
-        var multFactor = 1/2;
-        var score = multFactor * difficultyScore * timeScore * moveScore;
-        // the square root is to decrease unneded differences between low and high scores
-        
-        score = Math.sqrt(score);
-        if (this.difficulty == 'hard') {
-            score *= 1.3;
-            score += 10;
-        }
-        return score;
-    };*/
+
     
     this.updateConnectedComponents = function() {
         var num = this.connectedComponents();

@@ -195,14 +195,6 @@ get '/privatechart/:order' do
   haml :privatechart
 end
 
-post '/gameover' do
-  # params contains: score, and level
-  @params = params
-  p @params
-  @name = session[:name]
-  @chart = Score.recent_players
-  haml :submitscore
-end
 
 def get_or_post(path, opts={}, &block)
   get(path, opts, &block)
