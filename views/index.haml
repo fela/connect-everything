@@ -52,14 +52,23 @@
 
   .modal-footer
     %button.btn{ type: 'button', data: {dismiss: 'modal'}, aria: {hidden: 'true'}} Cancel
-    %button.btn.btn-primary{type: 'submit', form: 'game-over-form'} Add to charts
+    %button#submit-score.btn.btn-primary{type: 'submit', form: 'game-over-form'} Add to charts
 
 :javascript
-  $('#game-over').on('shown', function() {
+  $(document).ready( function() {
     text_input = $('#nameinput');
-    text_input.focus();
-    if (text_input.value != '') {
-        text_input.select ();
-    }
-  })
+    $('#game-over').on('shown', function() {
+      text_input.focus();
+      if (text_input.val() != '') {
+          text_input.select();
+      }
+    });
+    $('#submit-score').click(function() {
+      if (text_input.val() == '') {
+        alert('Please enter your name');
+        return false;
+      }
+    });
+  });
+
 %script{src: "netconnect.js"}
