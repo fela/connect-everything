@@ -1198,15 +1198,4 @@ function getMousePosition(canvas, event) {
 
 game.init();
 
-// browser update
-var $buoop = {vs:{i:9,f:12,o:11,s:5,n:9}} 
-$buoop.ol = window.onload; 
-window.onload=function(){ 
- try {if ($buoop.ol) $buoop.ol();}catch (e) {} 
- var e = document.createElement("script"); 
- e.setAttribute("type", "text/javascript"); 
- e.setAttribute("src", "http://browser-update.org/update.js"); 
- document.body.appendChild(e); 
-}
-
 })();

@@ -8,6 +8,7 @@
     %meta{property: 'og:description', content: 'You can rotate the pieces by clicking on them. Connect all pieces to win the game.'}
   %body
     :javascript
+      // google analytics
       var _gaq = _gaq || [];
       _gaq.push(['_setAccount', 'UA-39370657-1']);
       _gaq.push(['_trackPageview']);
@@ -17,6 +18,16 @@
         ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
         var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
       })();
+      // old browser warnings
+      var $buoop = {vs:{i:9,f:16,o:11,s:5,n:9}}
+      $buoop.ol = window.onload;
+      window.onload=function(){
+       try {if ($buoop.ol) $buoop.ol();}catch (e) {}
+       var e = document.createElement("script");
+       e.setAttribute("type", "text/javascript");
+       e.setAttribute("src", "/update_browser.js");
+       document.body.appendChild(e);
+      }
     %script{src: "http://code.jquery.com/jquery.js"}
     %script{src: '/jquery.color-2.1.2.min.js'}
     %script{src: '/jquery.easing.min.js'}
