@@ -17,6 +17,10 @@ button.close {
 .modal-header{
     border-bottom-color: #434343;
 }
+.modal-body{
+    border-bottom-width: 0;
+    padding-bottom: 0;
+}
 
 .modal-footer {
     background-color: #434343;
