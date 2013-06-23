@@ -57,8 +57,9 @@ game.init = function() {
             if (newDistance+0.5 >= this.oldDistance) {
 
                 game.disableGame();
-                oldCell.reset(0.6);
-                setTimeout(function() {game.gameOver()}, 2000);
+                oldCell.animateError();
+                setTimeout(function() {oldCell.reset(0.6)}, 2000);
+                setTimeout(function() {game.gameOver()}, 4000);
             }
             this.lastClicks = [];
         }
@@ -844,6 +845,7 @@ function Cell(row, col, size, game, binary) {
             this.rotateCanvasMatrixAroundCenter(this.rotation);
         }
         this.drawBackground();
+        this.drawErrorBackground();
         this.drawCables();
         this.drawMoved();
         this.drawBorder();
@@ -873,7 +875,7 @@ function Cell(row, col, size, game, binary) {
         if (!this.moved || !game.gameActive) return;
 
         var ctx = this.context;
-        ctx.fillStyle = 'rgba(0, 0, 0, 0.6)';
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
         ctx.beginPath();
         ctx.rect(0, 0, this.size, this.size);
         ctx.closePath();
@@ -887,6 +889,16 @@ function Cell(row, col, size, game, binary) {
         this.fillTriangle(b, b2,  b+s, b2,  b, b2-s);
         this.fillTriangle(b2, b,  b2-s, b,  b2, b+s);
         this.fillTriangle(b2, b2,  b2-s, b2,  b2, b2-s);*/
+    };
+
+    this.drawErrorBackground = function() {
+        if (this.backgroundRed == 0) return;
+        var ctx = this.context;
+        ctx.fillStyle = 'rgba(142, 0, 2, ' + this.backgroundRed + ')';
+        ctx.beginPath();
+        ctx.rect(0, 0, this.size, this.size);
+        ctx.closePath();
+        ctx.fill();
     };
 
     this.fillTriangle = function(x1, y1, x2, y2, x3, y3) {
@@ -1111,8 +1123,31 @@ function Cell(row, col, size, game, binary) {
         this.rotation = 0;
         this.endRotation = 0;
         this.isRotating = false;
-        game.updateGame();
+        this.game.updateGame();
         this.draw(true);
+    };
+
+    this.backgroundRed = 0.0;
+    this.errorAnimationProgress = 0.0;
+
+    this.animateError = function () {
+        this.backgroundRed = 0.0;
+        var _this = this;
+        this.errorAnimationInterval =
+            setInterval(function(){_this.updateErrorAnimation()}, 1000/this.fps);
+    };
+
+    this.updateErrorAnimation = function() {
+      this.errorAnimationProgress += 1/20;
+      this.backgroundRed = Math.sin(this.errorAnimationProgress);
+      if (this.errorAnimationProgress >= 2.5) {
+         this.stopErrorAnimation();
+      }
+      this.draw(true);
+    };
+
+    this.stopErrorAnimation = function() {
+        clearInterval(this.errorAnimationInterval);
     };
 
     this.reset = function(time) {
