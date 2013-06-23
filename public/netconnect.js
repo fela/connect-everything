@@ -146,8 +146,9 @@ game.init = function() {
         game.mouseout();
     };
     
-    window.onkeydown = function() {
+    window.onkeydown = function(event) {
         if (!game.gameActive) return;
+        if (event.keyCode != 32) return;
         var cell = game.mouseOverCell;
         if (cell) {
             cell.marked = !cell.marked;
