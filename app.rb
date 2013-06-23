@@ -139,7 +139,9 @@ configure do
   #Score.update_scores
   #Score.rename_difficulties
   #Score.all().each {|s| s.destroy if s.name != 'f'}
-  enable :sessions
+  month = 2592000
+  use Rack::Session::Cookie, expire_after: month*3
+  #enable :sessions
 end
 
 helpers do  
