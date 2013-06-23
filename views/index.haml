@@ -26,7 +26,6 @@
 
 #game-over.modal.hide.fade
   .modal-header
-    / no idea why the following doesn't work :(
     %button.close{type: 'button', data: {dismiss: 'modal'}, aria: {hidden: 'true'} } &times;
     %h3 Game Over!
   .modal-body
@@ -71,4 +70,30 @@
     });
   });
 
+
+- unless @already_played
+  #instructions.modal.hide.fade
+    .modal-header
+      %button.close{type: 'button', data: {dismiss: 'modal'}, aria: {hidden: 'true'} } &times;
+      %h3 Connect everything 2
+    .modal-body
+      %h2 Rules
+      The <strong>rules</strong> of <em>connect everything</em> are simple: click on the pieces to rotate them in such a way that
+      %ul
+        %li
+          every piece is <strong>connected</strong> to every other one, and
+        %li
+          there are no cables left unconnected (unconnected cables have white endpoints)
+      The game is <strong>lost</strong> if you make a <strong>wrong move</strong> or you run out of time.
+      %br
+      %br
+      To solve the game it might be useful to know that
+      %ul
+        %li there is only <strong>one</strong> correct solution to every game, and
+        %li the solution has no cycles/loops
+    .modal-footer
+      %button.btn.btn-primary{ type: 'button', data: {dismiss: 'modal'}, aria: {hidden: 'true'}} Got it, let me play!
+  :javascript
+    $('#instructions').modal();
+    $('#instructions').find('.btn').focus();
 %script{src: "netconnect.js"}

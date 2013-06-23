@@ -178,6 +178,7 @@ end
 get '/' do
   @chart = Score.recent_players(5)
   @name = session[:name]
+  @already_played = session[:already_played]
   haml :index
 end
 
@@ -211,7 +212,9 @@ post '/submitscore' do
   end
 
   level = h params[:level]
-  score = params[:score]
+  score = params[:score].to_f
+
+  session[:already_played] = true if score > 10
   
   session[:name] = name
   
