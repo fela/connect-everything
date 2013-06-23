@@ -11,7 +11,7 @@
       %th
         score
     - scores.each_with_index do |s, i|
-      %tr{class: s == @newScore ? 'newscore' : ''}
+      %tr{class: s.id == @new_score_id ? 'newscore' : ''}
         %td.pos #{i+1}.
         %td.name  
           = s.name

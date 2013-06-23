@@ -218,15 +218,15 @@ post '/submitscore' do
   
   session[:name] = name
   
-  @newScore = Score.create(name: name, normalized_name: name.downcase, level: level, score: score, created_at: Time.now)
-  @newScore.save
-  @newScore.update_best_score
-  
-  
-  show_hiscores
+  @new_score = Score.create(name: name, normalized_name: name.downcase, level: level, score: score, created_at: Time.now)
+  @new_score.save
+  @new_score.update_best_score
+
+  redirect "/hiscores?newscore=#{@new_score.id}"
 end
 
 get '/hiscores' do
+  @new_score_id = params[:newscore].to_i
   show_hiscores
 end
 
