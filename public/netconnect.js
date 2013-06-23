@@ -4,35 +4,6 @@ var canvas = document.getElementById('gamecanvas');
 var context = canvas.getContext('2d');
 
 
-
-function postToUrl(path, params, method) {
-    method = method || "post"; // Set method to post by default, if not specified.
-
-    // The rest of this code assumes you are not using a library.
-    // It can be made less wordy if you use one.
-    var form = document.createElement("form");
-    form.setAttribute("method", method);
-    form.setAttribute("action", path);
-
-    for(var key in params) {
-        if(params.hasOwnProperty(key)) {
-            var hiddenField = document.createElement("input");
-            hiddenField.setAttribute("type", "hidden");
-            hiddenField.setAttribute("name", key);
-            hiddenField.setAttribute("value", params[key]);
-
-            form.appendChild(hiddenField);
-         }
-    }
-
-    document.body.appendChild(form);
-    form.submit();
-}
-
-function randomDirection() {
-    return Math.floor(Math.random()*4);
-}
-
 // gets a random element from an array
 Array.prototype.random = function() {
     return this[Math.floor(Math.random() * this.length)];
@@ -171,10 +142,12 @@ game.init = function() {
     };
     
     canvas.onmouseout = function() {
+        if (!game.gameActive) return;
         game.mouseout();
     };
     
     window.onkeydown = function() {
+        if (!game.gameActive) return;
         var cell = game.mouseOverCell;
         if (cell) {
             cell.marked = !cell.marked;
@@ -183,6 +156,7 @@ game.init = function() {
     };
     
     this.mouseout = function() {
+        if (!game.gameActive) return;
         if (!game.mouseOverCell) {
             return;
         }
@@ -191,7 +165,6 @@ game.init = function() {
         game.mouseOverCell.dirty = true;
         game.mouseOverCell = null;
         game.draw();
-        console.log('mouseout');
     };
     
     this.updateGame = function() {
