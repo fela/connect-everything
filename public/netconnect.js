@@ -1138,7 +1138,7 @@ function Cell(row, col, size, game, binary) {
     };
 
     this.updateErrorAnimation = function() {
-      this.errorAnimationProgress += 1/20;
+      this.errorAnimationProgress += 1/16;
       this.backgroundRed = Math.sin(this.errorAnimationProgress);
       if (this.errorAnimationProgress >= 2.5) {
          this.stopErrorAnimation();
@@ -1178,13 +1178,13 @@ function Cell(row, col, size, game, binary) {
         var rotations;
 
         if (this.isStraightCable()) {
-            // change in 70% of cases
+            // change in 80% of cases
             rotations = 1;
-            if (Math.random() < 0.3) rotations = 0;
+            if (Math.random() < 0.2) rotations = 0;
         } else {
-            // change in 85% of cases
+            // change in 90% of cases
             rotations = Math.floor((Math.random()*4)) + 1;
-            if (Math.random() < 0.15) rotation = 0;
+            if (Math.random() < 0.1) rotation = 0;
         }
         for (var i = 0; i < rotations; ++i) {
             this.rotateClockwise();
