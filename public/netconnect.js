@@ -322,6 +322,7 @@ game.init = function() {
                 game.gameOver();
             }
         });
+	_gaq.push(['_trackPageview', '/level'+this.level]);
     };
 
     this.finishLoadingGame = function(serializedGame) {
