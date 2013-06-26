@@ -17,6 +17,7 @@ game.mouseDetected = false;
 game.init = function() {
     
     canvas.onmousedown = function(evt){game.handleClick(evt)};
+    canvas.touchstart = function(evt){game.handleClick(evt)};
 
 
     this.handleClick = function(evt)   {
