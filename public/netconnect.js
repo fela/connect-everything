@@ -13,6 +13,7 @@ Array.prototype.random = function() {
 var game = {};
 game.Border = 1/4; // as a proportion of one cell
 game.context = context;
+game.mouseDetected = false;
 game.init = function() {
     
     canvas.onclick = function(evt) {
@@ -26,6 +27,7 @@ game.init = function() {
         if (!cell) {
             return;
         }
+        if (!game.mouseDetected) clockwise = true;
 
         if (typeof game.lastCell === 'undefined') {
             game.lastCell = cell;
@@ -109,8 +111,8 @@ game.init = function() {
     this.getCellAndRotation = function(event) {
         var pos = getMousePosition(canvas, event);
         var size = this.cellSize; // cellsize
-        var x = pos.x-this.Border*size;
-        var y = pos.y-this.Border*size;
+        var x = pos.x-this.border;
+        var y = pos.y-this.border;
         var row = Math.floor(y/size);
         var col = Math.floor(x/size);
         var cell = game.cellAt(row, col);
@@ -120,6 +122,7 @@ game.init = function() {
     };
     
     canvas.onmousemove = function(evt) {
+        game.mouseDetected = true;
         var cellAndRotation = game.getCellAndRotation(evt);
         var cell = cellAndRotation.cell;
         var clockwise = cellAndRotation.clockwise;
@@ -584,15 +587,21 @@ game.init = function() {
     this.updateWidthAndHeight = function() {
         var width = $(window).width()-200;
         var height = $(window).height()-50;
-        this.canvasSize = Math.min(width, height);
         this.width = width;
         this.height = height;
         var max_width = this.width / (this.cols+this.Border*2);
         var max_height = this.height / (this.rows+this.Border*2);
         var cellSize =  Math.min(max_width, max_height);
+        cellSize = Math.floor(cellSize);
+        this.border = Math.floor(cellSize*this.Border);
 
-        canvas.setAttribute('width', cellSize *(this.cols+this.Border*2));
-        canvas.setAttribute('height', cellSize *(this.rows+this.Border*2));
+        var w = cellSize * this.cols + this.border*2;
+        var h = cellSize * this.rows + this.border*2;
+        canvas.setAttribute('width', '' + w);
+        canvas.setAttribute('height', '' + h);
+        canvas.width = w;
+        canvas.height = h;
+
         this.cellSize = cellSize;
         return cellSize;
     };
@@ -731,11 +740,11 @@ function Cell(row, col, size, game, binary) {
     }
     
     this.x = function() {
-        return this.size*(this.col+game.Border);
+        return this.size*this.col+game.border;
     };
 
     this.y = function() {
-        return this.size*(this.row+game.Border);
+        return this.size*this.row+game.border;
     };
 
     this.setMoved = function() {
@@ -1021,7 +1030,6 @@ function Cell(row, col, size, game, binary) {
         var centerX = this.size / 2;
         //var centerY = this.y() + this.size / 2;
         var ctx = this.context;
-        ctx.lineWidth = lineWidth;
         ctx.fillStyle = this.game.colors[this.color];
         ctx.beginPath();
         ctx.fillRect(centerX-lineWidth/2, 0, lineWidth, this.size/2+lineWidth/2);
