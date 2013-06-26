@@ -16,7 +16,7 @@ game.context = context;
 game.mouseDetected = false;
 game.init = function() {
     
-    canvas.onclick = function(evt) {
+    canvas.onmousedown = function(evt) {
         if (!game.gameActive) {
             return;
         }
