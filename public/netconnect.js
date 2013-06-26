@@ -40,6 +40,7 @@ game.init = function() {
         }
         cell.setMoved();
         cell.animate(clockwise);
+        evt.preventDefault();
     };
     // disable selection that can get triggered on double mouse click
     canvas.onselectstart = function() {return false;};
