@@ -16,14 +16,17 @@ game.context = context;
 game.mouseDetected = false;
 game.init = function() {
     
-    canvas.onmousedown = function(evt) {
+    canvas.onmousedown = function(evt){game.handleClick(evt)};
+
+
+    this.handleClick = function(evt)   {
         if (!game.gameActive) {
             return;
         }
         var cellAndRotation = game.getCellAndRotation(evt);
         var cell = cellAndRotation.cell;
         var clockwise = cellAndRotation.clockwise;
-        
+
         if (!cell) {
             return;
         }
