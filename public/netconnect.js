@@ -122,6 +122,7 @@ game.init = function() {
     };
     
     canvas.onmousemove = function(evt) {
+        if (evt.which != 0) return;
         game.mouseDetected = true;
         var cellAndRotation = game.getCellAndRotation(evt);
         var cell = cellAndRotation.cell;
