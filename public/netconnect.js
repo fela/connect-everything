@@ -19,7 +19,6 @@ game.init = function() {
     canvas.onmousedown = function(evt){game.handleClick(evt)};
     canvas.ontouchstart = function(evt){game.handleClick(evt)};
 
-
     this.handleClick = function(evt)   {
         if (!game.gameActive) {
             return;
@@ -917,7 +916,7 @@ function Cell(row, col, size, game, binary) {
         ctx.fill();
     };
 
-    this.fillTriangle = function(x1, y1, x2, y2, x3, y3) {
+    /*this.fillTriangle = function(x1, y1, x2, y2, x3, y3) {
         var ctx = this.context;
         ctx.beginPath();
         ctx.moveTo(x1, y1);
@@ -926,7 +925,7 @@ function Cell(row, col, size, game, binary) {
         ctx.closePath();
         ctx.fillStyle = 'rgb(50, 50, 50)';
         ctx.fill();
-    };
+    };*/
 
     this.drawBorder = function() {
         var ctx = this.context;
@@ -1028,26 +1027,34 @@ function Cell(row, col, size, game, binary) {
         
         ctx.restore();
     };
+
+    this.cableWidth = function() {
+        var s = Math.round(this.size/5);
+        // if this.size is odd s isn't and vice versa
+        var sizeOdd = Math.abs(this.size - Math.round(this.size/2) * 2);
+        var sOdd = Math.abs(s - Math.round(s/2) * 2);
+        s -= sizeOdd - sOdd;
+        console.log('this.size: ' + this.size + ', s: ' + s);
+        return s;
+    };
     
     // draws upward cable
     // used as a base to draw cables in all directions
     this.drawCableUp = function(unmatched) {
-        var lineWidth = this.size / 5;
+        var s = this.cableWidth();
         var centerX = this.size / 2;
-        //var centerY = this.y() + this.size / 2;
         var ctx = this.context;
         ctx.fillStyle = this.game.colors[this.color];
         ctx.beginPath();
-        ctx.fillRect(centerX-lineWidth/2, 0, lineWidth, this.size/2+lineWidth/2);
-        //ctx.moveTo(centerX, this.y);
-        //ctx.lineTo(centerX, centerY+(lineWidth/2));
+        ctx.fillRect(centerX-s/2, 0, s, this.size/2+s/2);
         ctx.closePath();
         ctx.fill();
         
         if (unmatched) {
             ctx.fillStyle = 'white';
             ctx.beginPath();
-            ctx.fillRect(centerX-lineWidth/2, 0, lineWidth, lineWidth/2);
+            var bottom = Math.floor(s/2);
+            ctx.fillRect(centerX-s/2, 0, s, bottom);
             ctx.closePath();
             ctx.fill();
         }
