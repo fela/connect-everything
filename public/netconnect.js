@@ -847,7 +847,7 @@ function Cell(row, col, size, game, binary) {
         ctx.save();
         ctx.translate(this.x(), this.y());
         if (this.isRotating) {
-            this.drawAnimationBackground();
+            this.drawBlackBackground();
             for (var dir = 0; dir < 4; ++dir) {
                 var n = this.neighbor(dir);
                 if (n && !n.isRotating) {
@@ -855,6 +855,8 @@ function Cell(row, col, size, game, binary) {
                     n.draw(true);
                     ctx.save();
                     ctx.translate(this.x(), this.y());
+                } else if (!n) {
+                    this.drawAnimationBackground(dir);
                 }
             }
             this.rotateCanvasMatrixAroundCenter(this.rotation);
@@ -872,14 +874,16 @@ function Cell(row, col, size, game, binary) {
     
     this.drawBackground = function() {
         var ctx = this.context;
-        
-        // draw contour and background
-        ctx.strokeStyle = 'gray';
-        if (this.marked) {
-            ctx.fillStyle = 'rgb(100,100,100)';
-        } else {
-            ctx.fillStyle = this.background;
-        }
+        ctx.fillStyle = this.background;
+        ctx.beginPath();
+        ctx.rect(0, 0, this.size, this.size);
+        ctx.closePath();
+        ctx.fill();
+    };
+
+    this.drawBlackBackground = function() {
+        var ctx = this.context;
+        ctx.fillStyle = 'black';
         ctx.beginPath();
         ctx.rect(0, 0, this.size, this.size);
         ctx.closePath();
@@ -938,14 +942,16 @@ function Cell(row, col, size, game, binary) {
         ctx.stroke();
     };
     
-    this.drawAnimationBackground = function() {
+    this.drawAnimationBackground = function(direction) {
         var ctx = this.context;
-            ctx.fillStyle = 'black';
-            ctx.beginPath();
-            ctx.fillRect(-this.size/2, 0, 2*this.size, this.size);
-            ctx.fillRect(0, -this.size/2, this.size, 2*this.size);
-            ctx.closePath();
-            ctx.fill();
+        ctx.save();
+        this.rotateCanvasMatrixAroundCenter(direction*Math.PI/2.0);
+        ctx.fillStyle = 'black';
+        ctx.beginPath();
+        ctx.fillRect(0, -this.size/2, this.size, this.size/2);
+        ctx.closePath();
+        ctx.fill();
+        ctx.restore();
         
     };
     
@@ -976,7 +982,8 @@ function Cell(row, col, size, game, binary) {
         ctx.stroke();
         
         // triangle
-        var y1 = y2 = centerY;
+        var y1 = centerY;
+        var y2 = centerY;
         var y3 = centerY + lineWidth/2;
         var x3 = null;
         if (this.hover) {
@@ -1034,7 +1041,6 @@ function Cell(row, col, size, game, binary) {
         var sizeOdd = Math.abs(this.size - Math.round(this.size/2) * 2);
         var sOdd = Math.abs(s - Math.round(s/2) * 2);
         s -= sizeOdd - sOdd;
-        console.log('this.size: ' + this.size + ', s: ' + s);
         return s;
     };
     
@@ -1089,7 +1095,6 @@ function Cell(row, col, size, game, binary) {
     this.endRotation = 0;
     this.speed = 0.7; // radiants/s
     this.fps = 50;
-    this.framesLeft = 100;
     this.clicks = []; // boolean clockwise or not
     
     this.animate = function(clockwise, time) {
@@ -1105,24 +1110,23 @@ function Cell(row, col, size, game, binary) {
         var dist = this.endRotation - this.rotation;
         // speed in radiants/s 
         this.speed = dist/time;
-        this.framesLeft = Math.floor(time * this.fps);
+        this.rotationLeft = dist;
         clearInterval(this.animationInterval);
         this.startAnimation();
     };
     
     this.drawFrame = function() {
-        this.updatePosition();
-        this.draw(true);
-        //this.rotateCanvasMatrixAroundCenter(this.rotation);
-        //this.rotateCanvasMatrixAroundCenter(-this.rotation);
-        this.framesLeft--;
-        if (this.framesLeft <= 0) {
+        if (!this.isRotating) return;
+        var timePassed = 1/this.fps;
+        var movement = timePassed*this.speed;
+        this.rotation += movement;
+        this.rotationLeft -= movement;
+        if (this.rotationLeft*this.speed <= 0) {
+            this.rotation = 0;
             this.stopAnimation();
+        } else {
+            this.draw(true);
         }
-    };
-    
-    this.updatePosition = function() {
-        this.rotation += this.speed/this.fps;
     };
 
     this.startAnimation = function() {
@@ -1132,6 +1136,8 @@ function Cell(row, col, size, game, binary) {
 
     this.stopAnimation = function() {
         clearInterval(this.animationInterval);
+        this.rotation = 0;
+        this.draw(true);
         for (var i = 0; i < this.clicks.length; ++i) {
             var clockwise = this.clicks[i];
             game.handleNewClick({cell:this, clockwise:clockwise});
@@ -1142,11 +1148,9 @@ function Cell(row, col, size, game, binary) {
             }
         }
         this.clicks = [];
-        this.rotation = 0;
         this.endRotation = 0;
         this.isRotating = false;
         this.game.updateGame();
-        this.draw(true);
     };
 
     this.backgroundRed = 0.0;
