@@ -874,7 +874,11 @@ function Cell(row, col, size, game, binary) {
     
     this.drawBackground = function() {
         var ctx = this.context;
-        ctx.fillStyle = this.background;
+        if (this.marked) {
+            ctx.fillStyle = 'rgb(100,100,100)';
+        } else {
+            ctx.fillStyle = this.background;
+        }
         ctx.beginPath();
         ctx.rect(0, 0, this.size, this.size);
         ctx.closePath();
