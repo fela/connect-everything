@@ -1040,7 +1040,7 @@ function Cell(row, col, size, game, binary) {
     };
 
     this.cableWidth = function() {
-        var s = Math.round(this.size/5);
+        var s = Math.round(this.size*0.23);
         // if this.size is odd s isn't and vice versa
         var sizeOdd = Math.abs(this.size - Math.round(this.size/2) * 2);
         var sOdd = Math.abs(s - Math.round(s/2) * 2);
