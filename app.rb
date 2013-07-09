@@ -182,7 +182,7 @@ get '/' do
   haml :index
 end
 
-get 'ping' do
+get '/ping' do
   'PONG'
 end
 
