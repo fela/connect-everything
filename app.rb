@@ -105,7 +105,7 @@ class Score
     all().each {|s|s.name = s.name.strip; s.normalized_name = s.name.downcase; s.save}
   end
   def self.remove_blacklisted
-    blacklist = [/a fela/, /fuck/]
+    blacklist = [/blacklisted/]
     all().each do |s|
       blacklist.each do |m|
         if s.name =~ m
@@ -180,6 +180,10 @@ get '/' do
   @name = session[:name]
   @already_played = session[:already_played]
   haml :index
+end
+
+get 'ping' do
+  'PONG'
 end
 
 get '/level' do
