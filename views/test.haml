@@ -1,9 +1,11 @@
 !!!
 %html
-  %head%title test
+  %head
+    %title test
+    %script{src: '/jquery.js'}
   %body
     %p Lorem etc etc
     :javascript
-      $(document).onload(function(){
+      $(document).mousemove(function(){
         alert('test');
       });

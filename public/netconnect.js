@@ -125,8 +125,12 @@ game.init = function() {
         return {cell:cell, clockwise:clockwise};
     };
     
-    canvas.onmousemove = function(evt) {
-        if (evt.which != 0) return;
+    $(canvas).mousemove(function(evt) {
+        // exclude non desktop events
+        var chrome_desktop = evt.which === 0;
+        var firefox_desktop = evt.button === 0 && evt.button === 0;
+        var tablet_event = !chrome_desktop && !firefox_desktop;
+        if (tablet_event) return;
         game.mouseDetected = true;
         var cellAndRotation = game.getCellAndRotation(evt);
         var cell = cellAndRotation.cell;
@@ -148,7 +152,7 @@ game.init = function() {
             cell.dirty = true;
         }
         game.draw();
-    };
+    });
     
     canvas.onmouseout = function() {
         if (!game.gameActive) return;

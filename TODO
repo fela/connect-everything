@@ -1,5 +1,6 @@
 
 SHORT TERM
+* use jquery instead of mixing it with traditional js at random
 * updateConnectedComponent has a bug with empty cells (and the code is probably buggy)
 * layout different from square
 * level with different sizes/scores

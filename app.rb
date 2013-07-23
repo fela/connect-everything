@@ -182,6 +182,7 @@ get '/' do
   haml :index
 end
 
+# used to keep dyno alive through uptimerobot.com
 get '/ping' do
   'PONG'
 end
@@ -232,6 +233,10 @@ end
 get '/hiscores' do
   @new_score_id = params[:newscore].to_i
   show_hiscores
+end
+
+get '/test' do
+  haml :test, layout: false
 end
 
 
