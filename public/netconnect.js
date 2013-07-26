@@ -371,6 +371,11 @@ game.init = function() {
         this.mouseOverCell = null;
         this.resize();
         this.updateScore();
+        if (this.level == 1) {
+            $('#loading').hide();
+            $('#game').show();
+            $('footer').show();
+        }
     };
 
 

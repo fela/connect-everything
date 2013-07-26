@@ -1,7 +1,7 @@
-%table
+%table#game.hide
   %tr
     %td
-      %canvas{id: 'gamecanvas', height: 0, width: 0}
+      %canvas#gamecanvas{height: 0, width: 0}
     %td.gameinfo
 
       .level
@@ -29,6 +29,9 @@
       %br
       %button#save-score.btn.btn-primary
         Save
+
+%p#loading
+  loading level1...
 
 #game-over.modal.hide.fade
   .modal-header
@@ -79,6 +82,7 @@
     $('#save-score').click(function() {
        $('#game-over').modal();
     });
+    $('footer').addClass('hide')
   });
 
 
@@ -99,6 +103,8 @@
     .modal-footer
       %button.btn.btn-primary{ type: 'button', data: {dismiss: 'modal'}, aria: {hidden: 'true'}} Got it, let me play!
   :javascript
-    $('#instructions').modal();
-    $('#instructions').find('.btn').focus();
+    $(document).ready( function() {
+      $('#instructions').modal();
+      $('#instructions').find('.btn').focus();
+    });
 %script{src: "netconnect.js"}
