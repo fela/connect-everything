@@ -1,3 +1,7 @@
+REFACTORING
+game.gameActive => game.Active
+cell.marked => cell.solved
+
 
 SHORT TERM
 * use jquery instead of mixing it with traditional js at random
