@@ -1,6 +1,7 @@
 REFACTORING
 game.gameActive => game.Active
 cell.marked => cell.solved
+all events to jQuery ones
 
 
 SHORT TERM

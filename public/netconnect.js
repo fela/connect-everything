@@ -182,6 +182,13 @@ game.init = function() {
         if (!game.gameActive) {return;} // don't win after the game over animation
         this.disableGame();
         this.level++;
+        for (var i = 0; i < this.numOfCells(); ++i) {
+            var cell = this.cells[i];
+            if (!cell.marked) {
+                cell.marked = true;
+                cell.draw(true);
+            }
+        }
         $('.level-num').text(this.level);
         this.loadGame();
     };
