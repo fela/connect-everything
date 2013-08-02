@@ -159,7 +159,7 @@ game.init = function() {
         if (!game.gameActive) return;
         if (event.keyCode != 32) return;
         var cell = game.mouseOverCell;
-        if (cell || !cell.marked) {
+        if (cell && !cell.marked && !cell.isRotating) {
             game.cellMoved(cell);
         }
     };
