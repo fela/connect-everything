@@ -42,12 +42,16 @@ game.init = function() {
     this.handleRotationFinished = function(cellAndRotation) {
         if (!game.gameActive) return;
         var cell = cellAndRotation.cell;
+        if (cell != this.lastCell) {
+            // another cell has been moved during the rotation
+            this.cellMoved(cell);
+        }
     };
 
     this.handleRotationStarted = function(cell) {
         if (!game.gameActive) return;
         var lastCell = this.lastCell;
-        if (lastCell && lastCell !== cell) {
+        if (lastCell && lastCell !== cell && !lastCell.isRotating) {
             this.cellMoved(lastCell);
         }
         this.lastCell = cell;
@@ -72,7 +76,7 @@ game.init = function() {
             this.cellsSolved += 1;
             this.updateScore();
         }
-    }
+    };
     
     /*this.mergeClicks = function() {
         var nClicks = this.lastClicks.length;
@@ -1154,7 +1158,6 @@ function Cell(row, col, size, game, binary) {
         this.draw(true);
         for (var i = 0; i < this.clicks.length; ++i) {
             var clockwise = this.clicks[i];
-            game.handleRotationFinished({cell:this, clockwise:clockwise});
             if (clockwise) {
                 this.rotateClockwise();
             } else {
@@ -1165,6 +1168,7 @@ function Cell(row, col, size, game, binary) {
         this.endRotation = 0;
         this.isRotating = false;
         this.game.updateGame();
+        game.handleRotationFinished({cell:this, clockwise:clockwise});
     };
 
     this.backgroundRed = 0.0;
