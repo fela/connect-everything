@@ -48,23 +48,31 @@ game.init = function() {
         if (!game.gameActive) return;
         var lastCell = this.lastCell;
         if (lastCell && lastCell !== cell) {
-            lastCell.marked = true;
-            lastCell.moved = false;
-            lastCell.draw(true);
-            // check for error
-            if (lastCell.absNormalizeMoves(lastCell.originalPosition) !== 0) {
-                // game lost
-                game.disableGame();
-                lastCell.animateError();
-                setTimeout(function() {lastCell.    reset(0.6)}, 2000);
-                setTimeout(function() {game.gameOver()}, 4000);
-            } else {
-                this.cellsSolved += 1;
-                this.updateScore();
-            }
+            this.cellMoved(lastCell);
         }
         this.lastCell = cell;
     };
+
+
+    // called after the cell has finished moving
+    // or after ti has been marked
+    // checks if the cell is a correct solution
+    this.cellMoved = function(cell) {
+        cell.marked = true;
+        cell.moved = false;
+        cell.draw(true);
+        // check for error
+        if (cell.absNormalizeMoves(cell.originalPosition) !== 0) {
+            // game lost
+            game.disableGame();
+            cell.animateError();
+            setTimeout(function() {cell.reset(0.6)}, 2000);
+            setTimeout(function() {game.gameOver()}, 4000);
+        } else {
+            this.cellsSolved += 1;
+            this.updateScore();
+        }
+    }
     
     /*this.mergeClicks = function() {
         var nClicks = this.lastClicks.length;
@@ -151,9 +159,8 @@ game.init = function() {
         if (!game.gameActive) return;
         if (event.keyCode != 32) return;
         var cell = game.mouseOverCell;
-        if (cell) {
-            cell.marked = !cell.marked;
-            cell.draw(true);
+        if (cell || !cell.marked) {
+            game.cellMoved(cell);
         }
     };
     
@@ -962,7 +969,7 @@ function Cell(row, col, size, game, binary) {
     };
     
     this.drawHover = function() {
-        if (!game.gameActive) {return}
+        if (!game.gameActive || this.marked) {return}
         if (this.hover === null || typeof this.hover === 'undefined') {
             return;
         }
