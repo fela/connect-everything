@@ -737,7 +737,9 @@ function Cell(row, col, size, game, binary) {
     this.originalPosition = 0;
     if (binary) {
         var cables = binary.split('')
-        this.cables = binary.split('').map(function(val) {return val === '1'; });
+        this.cables = binary.split('').map(function(val) {
+            return val === '1';
+        });
     }
     this.unmatchedCables = [false, false, false, false];
     
@@ -1258,7 +1260,11 @@ function Cell(row, col, size, game, binary) {
 
     this.absNormalizeMoves = function(moves) {
         return Math.abs(this.normalizeMoves(moves));
-    }
+    };
+
+    if (this.numOfCables() == 0 || this.numOfCables() == 4) {
+        this.marked = true;
+    };
 }
 
 
