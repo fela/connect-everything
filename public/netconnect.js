@@ -14,6 +14,7 @@ var game = {};
 game.Border = 1/4; // as a proportion of one cell
 game.context = context;
 game.mouseDetected = false;
+game.expertMode = $('#expert-mode').length ? true : false;
 game.init = function() {
     
     canvas.onmousedown = function(evt){game.handleClick(evt)};
@@ -200,7 +201,6 @@ game.init = function() {
                 cell.draw(true);
             }
         }
-        $('.level-num').text(this.level);
         this.loadGame();
     };
 
@@ -341,7 +341,7 @@ game.init = function() {
             }
         });
         // google analytics
-	_gaq.push(['_trackPageview', '/level'+this.level]);
+	    _gaq.push(['_trackPageview', '/level'+this.level]);
     };
 
     this.finishLoadingGame = function(serializedGame) {
@@ -379,7 +379,8 @@ game.init = function() {
         this.resize();
         this.cellsSolved = 0;
         this.updateScore();
-        if (this.level == 1) {
+        $('.level-num').text(this.level);
+        if (this.level == 1 || (this.expertMode && this.level == 9) ) {
             $('#loading').hide();
             $('#game').show();
             $('footer').show();
@@ -676,8 +677,13 @@ game.init = function() {
     };
 
     this.calculateScore = function() {
-        var score = 5 * (this.level-1);
-        score += 5 * this.cellsSolved/this.numOfCells();
+        var score;
+        var percentageCompleted = this.cellsSolved/this.numOfCells();
+        if (this.expertMode && this.level < 14) {
+            score = 15 * (9-this.level) + 15 * percentageCompleted;
+        } else {
+            score = 5 * (this.level-1) + 5 * percentageCompleted;
+        }
         return score;
     };
 
@@ -690,7 +696,11 @@ game.init = function() {
 
 
     // first time initializations
-    this.level = 1;
+    if (this.expertMode) {
+        this.level = 9;
+    } else {
+        this.level = 1;
+    }
     this.loadGame();
     $(document).ready($(window).resize(function(){game.resize()}));
     setInterval(_this.updateTimeDisplay, 1000);
@@ -711,13 +721,6 @@ function Cell(row, col, size, game, binary) {
         this.draw = function(){}; // do not draw anymore
     };
 
-    // testing function, returns mostly false but sometimes true
-    this.maybe = function() {
-        if (Math.random() > 0.2) {
-            return false;
-        }
-        return true;
-    };
     // default values, might be overridden
     this.row = row;
     this.col = col;

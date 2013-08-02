@@ -1,3 +1,6 @@
+- if @expert_mode
+  #expert-mode
+
 %table#game.hide
   %tr
     %td
@@ -31,7 +34,8 @@
         Save
 
 %p#loading
-  loading level1...
+  %br
+  loading first level
 
 #game-over.modal.hide.fade
   .modal-header
@@ -57,11 +61,12 @@
 
   .modal-footer
     %button.btn{ type: 'button', data: {dismiss: 'modal'}, aria: {hidden: 'true'}} Cancel
-    %a.btn{href: '/'} New Game
+    %a.btn{href: @expert_mode ? '/expert' : '/'} New Game
     %button#submit-score.btn.btn-primary{type: 'submit', form: 'game-over-form'} Save score
 
 :javascript
   $(document).ready( function() {
+
     text_input = $('#nameinput');
     $('#game-over').on('shown', function() {
       text_input.focus();

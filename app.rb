@@ -147,7 +147,14 @@ end
 helpers do  
   include Rack::Utils  
   alias_method :h, :escape_html
-  
+
+  def load_game
+    @chart = Score.recent_players(5)
+    @name = session[:name]
+    @already_played = session[:already_played]
+    haml :index
+  end
+
   def show_hiscores
     @overAllChart = Score.chart(single_entries: true)
     @recentChart = Score.recent_chart
@@ -174,13 +181,15 @@ end
 
 
 
-
 get '/' do
-  @chart = Score.recent_players(5)
-  @name = session[:name]
-  @already_played = session[:already_played]
-  haml :index
+  load_game
 end
+
+get '/expert' do
+  @expert_mode = true
+  load_game
+end
+
 
 # used to keep dyno alive through uptimerobot.com
 get '/ping' do
