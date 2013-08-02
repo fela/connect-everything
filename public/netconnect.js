@@ -680,7 +680,7 @@ game.init = function() {
         var score;
         var percentageCompleted = this.cellsSolved/this.numOfCells();
         if (this.expertMode && this.level < 14) {
-            score = 15 * (9-this.level) + 15 * percentageCompleted;
+            score = 15 * (this.level-9) + 15 * percentageCompleted;
         } else {
             score = 5 * (this.level-1) + 5 * percentageCompleted;
         }
