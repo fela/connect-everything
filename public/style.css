@@ -120,3 +120,7 @@ input {
     text-align: left;
     min-width: 150px;
 }
+
+#disqus_thread {
+    margin-top: 30px;
+}

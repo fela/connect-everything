@@ -248,4 +248,8 @@ get '/test' do
   haml :test, layout: false
 end
 
+get '/comments' do
+  haml :comments
+end
+
 
