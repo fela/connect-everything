@@ -1,19 +1,26 @@
 (function(){
+//////////////////////////////// Helper //////////////////////////////////////
 
-var canvas = document.getElementById('gamecanvas');
-var context = canvas.getContext('2d');
-
-
-// gets a random element from an array
+// monkey patch
+// get a random element from an array
 Array.prototype.random = function() {
     return this[Math.floor(Math.random() * this.length)];
 };
 
 
-var game = {};
-game.Border = 1/4; // as a proportion of one cell
-game.context = context;
-game.mouseDetected = false;
+var canvas = document.getElementById('gamecanvas');
+// it might not be the most elegant way to use this vars everywhere
+// but it seems like the simples solution
+var context = canvas.getContext('2d');
+var game = {}
+
+
+/////////////////////////////// the game object ///////////////////////////////
+// as a proportion of one cell
+game.BORDER = 1/4;     
+// will stay in touch mode as long as no mouse is detected       
+game.mouseDetected = false;  
+// if the id '#expert-mode' is present that the mode is expert mode
 game.expertMode = $('#expert-mode').length ? true : false;
 game.init = function() {
     
@@ -21,7 +28,7 @@ game.init = function() {
     canvas.ontouchstart = function(evt){game.handleClick(evt)};
 
     this.handleClick = function(evt)   {
-        if (!game.gameActive) {
+        if (!game.active) {
             return;
         }
         var cellAndRotation = game.getCellAndRotation(evt);
@@ -41,7 +48,7 @@ game.init = function() {
 
     // called after the animation finishes
     this.handleRotationFinished = function(cellAndRotation) {
-        if (!game.gameActive) return;
+        if (!game.active) return;
         var cell = cellAndRotation.cell;
         if (cell != this.lastCell) {
             // another cell has been moved during the rotation
@@ -50,7 +57,7 @@ game.init = function() {
     };
 
     this.handleRotationStarted = function(cell) {
-        if (!game.gameActive) return;
+        if (!game.active) return;
         var lastCell = this.lastCell;
         if (lastCell && lastCell !== cell && !lastCell.isRotating) {
             this.cellMoved(lastCell);
@@ -156,12 +163,12 @@ game.init = function() {
     });
     
     canvas.onmouseout = function() {
-        if (!game.gameActive) return;
+        if (!game.active) return;
         game.mouseout();
     };
     
     window.onkeydown = function(event) {
-        if (!game.gameActive) return;
+        if (!game.active) return;
         if (event.keyCode != 32) return;
         var cell = game.mouseOverCell;
         if (cell && !cell.marked && !cell.isRotating) {
@@ -170,7 +177,7 @@ game.init = function() {
     };
     
     this.mouseout = function() {
-        if (!game.gameActive) return;
+        if (!game.active) return;
         if (!game.mouseOverCell) {
             return;
         }
@@ -191,7 +198,7 @@ game.init = function() {
     };
     
     this.winGame = function() {
-        if (!game.gameActive) {return;} // don't win after the game over animation
+        if (!game.active) {return;} // don't win after the game over animation
         this.disableGame();
         this.level++;
         for (var i = 0; i < this.numOfCells(); ++i) {
@@ -225,7 +232,7 @@ game.init = function() {
     };
 
     this.disableGame = function() {
-        this.gameActive = false;
+        this.active = false;
     };
 
     
@@ -360,7 +367,7 @@ game.init = function() {
         this.wrapping = serializedGame.wrapping;
         this.difficulty = 'easy'; // TODO remove
         this.endTime = new Date().getTime() + serializedGame.time*1000;
-        this.gameActive = true;
+        this.active = true;
         this.updateTimeDisplay();
         var size = 1;
         i = 0;
@@ -610,11 +617,11 @@ game.init = function() {
         var height = $(window).height()-50;
         this.width = width;
         this.height = height;
-        var max_width = this.width / (this.cols+this.Border*2);
-        var max_height = this.height / (this.rows+this.Border*2);
+        var max_width = this.width / (this.cols+this.BORDER*2);
+        var max_height = this.height / (this.rows+this.BORDER*2);
         var cellSize =  Math.min(max_width, max_height);
         cellSize = Math.floor(cellSize);
-        this.border = Math.floor(cellSize*this.Border);
+        this.border = Math.floor(cellSize*this.BORDER);
 
         var w = cellSize * this.cols + this.border*2;
         var h = cellSize * this.rows + this.border*2;
@@ -650,7 +657,7 @@ game.init = function() {
     
     var _this = this;
     this.updateTimeDisplay = function() {
-        if (!game.gameActive) return;
+        if (!game.active) return;
 
         if (new Date().getTime() >=  game.endTime) {
             // game over handling and animation
@@ -913,7 +920,7 @@ function Cell(row, col, size, game, binary) {
     };
 
     this.drawMoved = function() {
-        if (!this.moved || !game.gameActive) return;
+        if (!this.moved || !game.active) return;
 
         var ctx = this.context;
         ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
@@ -978,7 +985,7 @@ function Cell(row, col, size, game, binary) {
     };
     
     this.drawHover = function() {
-        if (!game.gameActive || this.marked) {return}
+        if (!game.active || this.marked) {return}
         if (this.hover === null || typeof this.hover === 'undefined') {
             return;
         }
