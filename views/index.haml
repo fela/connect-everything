@@ -1,3 +1,31 @@
+- content_for :head do
+  %meta{property: 'og:description', content: 'Simple puzzle game to challenge your logical thinking!'}
+  %meta{name: 'description', content: 'Simple puzzle game to challenge your logical thinking. Click to play directly in the browser!'}
+
+- unless @already_played
+  #instructions.modal.fade
+    .modal-header
+      %button.close{type: 'button', data: {dismiss: 'modal'}, aria: {hidden: 'true'} } &times;
+      %h3 Connect everything 2
+    .modal-body
+      %p.muted A simple but challenging Logic/Puzzle game written using Html5
+      %h2 Rules
+      %p The <strong>rules</strong> of <em>connect everything</em> are simple: click on the pieces to rotate the cables in such a way that
+      %ul
+        %li
+          every piece becomes <strong>connected</strong> to every other one, and
+        %li
+          there are no cables left unconnected (unconnected cables have white endpoints)
+      %p The game is <strong>lost</strong> if you make a <strong>wrong move</strong> or you run out of time.
+      %p Try to <strong>think logically</strong>!
+    .modal-footer
+      %button.btn.btn-primary{ type: 'button', data: {dismiss: 'modal'}, aria: {hidden: 'true'}} Got it, let me play!
+  :javascript
+    $(document).ready( function() {
+      $('#instructions').modal();
+      $('#instructions').find('.btn').focus();
+    });
+
 - if @expert_mode
   #expert-mode
 
@@ -89,27 +117,4 @@
     });
     $('footer').addClass('hide')
   });
-
-
-- unless @already_played
-  #instructions.modal.hide.fade
-    .modal-header
-      %button.close{type: 'button', data: {dismiss: 'modal'}, aria: {hidden: 'true'} } &times;
-      %h3 Connect everything 2
-    .modal-body
-      %h2 Rules
-      The <strong>rules</strong> of <em>connect everything</em> are simple: click on the pieces to rotate them in such a way that
-      %ul
-        %li
-          every piece becomes <strong>connected</strong> to every other one, and
-        %li
-          there are no cables left unconnected (unconnected cables have white endpoints)
-      The game is <strong>lost</strong> if you make a <strong>wrong move</strong> or you run out of time.
-    .modal-footer
-      %button.btn.btn-primary{ type: 'button', data: {dismiss: 'modal'}, aria: {hidden: 'true'}} Got it, let me play!
-  :javascript
-    $(document).ready( function() {
-      $('#instructions').modal();
-      $('#instructions').find('.btn').focus();
-    });
 %script{src: "netconnect.js"}
