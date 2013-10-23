@@ -7,7 +7,6 @@ Array.prototype.random = function() {
     return this[Math.floor(Math.random() * this.length)];
 };
 
-
 var canvas = document.getElementById('gamecanvas');
 // it might not be the most elegant way to use this vars everywhere
 // but it seems like the simples solution
@@ -17,6 +16,7 @@ var game = {}
 
 /////////////////////////////// the game object ///////////////////////////////
 // as a proportion of one cell
+game.aa = 'aatest'
 game.BORDER = 1/4;     
 // will stay in touch mode as long as no mouse is detected       
 game.mouseDetected = false;  
@@ -836,7 +836,7 @@ function Cell(row, col, size, game, binary) {
     };
     
     
-    this.context = game.context;
+    this.context = context;
     this.dirty = true;
     this.draw = function(force){
         if (this.dirty == false && !force) {
