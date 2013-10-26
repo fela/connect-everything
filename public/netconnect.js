@@ -16,7 +16,6 @@ var game = {}
 
 /////////////////////////////// the game object ///////////////////////////////
 // as a proportion of one cell
-game.aa = 'aatest'
 game.BORDER = 1/4;     
 // will stay in touch mode as long as no mouse is detected       
 game.mouseDetected = false;  
