@@ -105,6 +105,10 @@ input {
     text-align: left;
 }
 
+.text h1 {
+    color: #aaa;
+}
+
 .points-number {
     font-size: 25px;
 }
