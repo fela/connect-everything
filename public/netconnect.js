@@ -16,7 +16,8 @@ var game = {}
 
 /////////////////////////////// the game object ///////////////////////////////
 // as a proportion of one cell
-game.BORDER = 1/4;     
+var N_LEVELS = 16;
+game.BORDER = 1/4;
 // will stay in touch mode as long as no mouse is detected       
 game.mouseDetected = false;  
 // if the id '#expert-mode' is present that the mode is expert mode
@@ -391,6 +392,9 @@ game.init = function() {
             $('#game').show();
             $('footer').show();
         }
+        if (this.level == N_LEVELS) {
+            $('#time').removeClass('hide')
+        }
     };
 
 
@@ -658,7 +662,9 @@ game.init = function() {
     this.updateTimeDisplay = function() {
         if (!game.active) return;
 
-        if (new Date().getTime() >=  game.endTime) {
+        // XXX: a bit of a hack to disable losing level by time
+        // for all but last level
+        if (game.level === N_LEVELS && new Date().getTime() >= game.endTime) {
             // game over handling and animation
             game.disableGame();
             $('#time').animate( {
