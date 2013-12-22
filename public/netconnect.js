@@ -18,6 +18,7 @@ var game = {}
 // as a proportion of one cell
 var N_LEVELS = 16;
 game.BORDER = 1/4;
+
 // if the id '#expert-mode' is present that the mode is expert mode
 game.expertMode = $('#expert-mode').length ? true : false;
 game.init = function() {
@@ -1302,7 +1303,7 @@ function getMousePosition(canvas, event) {
 function hideAddressBar(){
     if(document.documentElement.scrollHeight<window.outerHeight/window.devicePixelRatio+1)
         document.documentElement.style.height=(window.outerHeight/window.devicePixelRatio+1)+'px';
-    setTimeout(window.scrollTo(1,1),0);
+    setTimeout(window.scrollTo(1,1),2000);
 }
 
 game.init();
