@@ -22,8 +22,8 @@ game.BORDER = 1/4;
 game.expertMode = $('#expert-mode').length ? true : false;
 game.init = function() {
     
-    canvas.onmousedown = function(evt){game.handleClick(evt)};
-    canvas.ontouchstart = function(evt){game.handleClick(evt)};
+    $(canvas).mousedown(function(evt){game.handleClick(evt)});
+    $(canvas).bind('touchstart', function(evt){game.handleClick(evt)});
 
     this.handleClick = function(evt)   {
         if (!game.active) {
