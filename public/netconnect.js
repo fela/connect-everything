@@ -22,7 +22,7 @@ game.BORDER = 1/4;
 game.expertMode = $('#expert-mode').length ? true : false;
 game.init = function() {
     
-    $(canvas).mousedown(function(evt){game.handleClick(evt)});
+    $(canvas).on('mousedown', function(evt){game.handleClick(evt)});
     $(canvas).on('touchstart', function(evt){game.handleClick(evt)});
 
     this.handleClick = function(evt)   {
@@ -1283,9 +1283,16 @@ function getMousePosition(canvas, event) {
         offsetY += element.offsetTop;
       } while ((element = element.offsetParent));
     }
-    
-    x = event.pageX - offsetX;
-    y = event.pageY - offsetY;
+
+    var positionInformation;
+    if (event.pageX) {
+        positionInformation = event;
+    } else {
+        // touch event
+        positionInformation = event.originalEvent.targetTouches[0];
+    }
+    x = positionInformation.pageX - offsetX;
+    y = positionInformation.pageY - offsetY;
     return {x:x,y:y};
 }
 
