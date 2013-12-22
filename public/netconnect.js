@@ -637,9 +637,6 @@ game.init = function() {
         for (var i = 0; i < this.cells.length; ++i) {
             this.cells[i].size = size;
         }
-        if ($.browser.mobile) {
-            hideAddressBar();
-        }
         this.draw(true);
     };
     
@@ -1300,11 +1297,11 @@ function getMousePosition(canvas, event) {
     return {x:x,y:y};
 }
 
-function hideAddressBar(){
+/*function hideAddressBar(){
     if(document.documentElement.scrollHeight<window.outerHeight/window.devicePixelRatio+1)
         document.documentElement.style.height=(window.outerHeight/window.devicePixelRatio+1)+'px';
     setTimeout(window.scrollTo(1,1),2000);
-}
+} */
 
 game.init();
 
