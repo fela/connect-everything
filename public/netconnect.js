@@ -1272,7 +1272,7 @@ function Cell(row, col, size, game, binary) {
 
     if (this.numOfCables() == 0 || this.numOfCables() == 4) {
         this.marked = true;
-    };
+    }
 }
 
 
@@ -1300,8 +1300,8 @@ function getMousePosition(canvas, event) {
 }
 
 function hideAddressBar(){
-    if(document.documentElement.scrollHeight<window.outerHeight/window.devicePixelRatio)
-        document.documentElement.style.height=(window.outerHeight/window.devicePixelRatio)+'px';
+    if(document.documentElement.scrollHeight<window.outerHeight/window.devicePixelRatio+1)
+        document.documentElement.style.height=(window.outerHeight/window.devicePixelRatio+1)+'px';
     setTimeout(window.scrollTo(1,1),0);
 }
 
