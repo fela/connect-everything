@@ -18,8 +18,6 @@ var game = {}
 // as a proportion of one cell
 var N_LEVELS = 16;
 game.BORDER = 1/4;
-// will stay in touch mode as long as no mouse is detected       
-game.mouseDetected = false;  
 // if the id '#expert-mode' is present that the mode is expert mode
 game.expertMode = $('#expert-mode').length ? true : false;
 game.init = function() {
@@ -38,7 +36,7 @@ game.init = function() {
         if (!cell || cell.marked) {
             return;
         }
-        if (!game.mouseDetected) clockwise = true;
+        if ($.browser.mobile) clockwise = true;
         cell.setMoved();
         cell.animate(clockwise);
         evt.preventDefault();
@@ -132,14 +130,9 @@ game.init = function() {
         var clockwise = Math.floor(x / (size/2))%2 == 1;
         return {cell:cell, clockwise:clockwise};
     };
-    
+
     $(canvas).mousemove(function(evt) {
-        // exclude non desktop events
-        var chrome_desktop = evt.which === 0;
-        var firefox_desktop = evt.button === 0 && evt.button === 0;
-        var tablet_event = !chrome_desktop && !firefox_desktop;
-        if (tablet_event) return;
-        game.mouseDetected = true;
+        if ($.browser.mobile) return;
         var cellAndRotation = game.getCellAndRotation(evt);
         var cell = cellAndRotation.cell;
         var clockwise = cellAndRotation.clockwise;
