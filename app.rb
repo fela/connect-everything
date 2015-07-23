@@ -128,12 +128,13 @@ end
 
  
 configure do
-  DataMapper.setup(:default, ENV['DATABASE_URL'] || 'postgres://fela:@localhost/net-connect2')
+  DataMapper.setup(:default, ENV['DATABASE_URL'] || 'postgres://fela:test@localhost/connect2')
   DataMapper.finalize
-  #Score.strip_names
+  # uncomment the following two lines the first time you run!
   #DataMapper.auto_upgrade!
-  #Score.update_best_scores
   #DataMapper.auto_migrate!
+  #Score.strip_names
+  #Score.update_best_scores
   #Score.remove_blacklisted
   DataMapper::Model.raise_on_save_failure = true
   

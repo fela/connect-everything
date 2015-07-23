@@ -427,7 +427,7 @@ game.init = function() {
         this.cols = serializedGame.cols;
         this.wrapping = serializedGame.wrapping;
         this.difficulty = 'easy'; // TODO remove
-        this.endTime = new Date().getTime() + serializedGame.time*1000;
+        this.startTime = new Date().getTime();
         this.active = true;
         this.updateTimeDisplay();
         var size = 1;
@@ -710,7 +710,7 @@ game.init = function() {
     
     this.getTimeStamp = function() {
         var nowTime = new Date().getTime();
-        var diff = (this.endTime - nowTime)/1000; // time in seconds
+        var diff = (nowTime - this.startTime)/1000; // time in seconds
         var mins = Math.floor(diff / 60);
         var secs = Math.floor(diff % 60);
         var secsStr = '' + secs;
@@ -726,23 +726,23 @@ game.init = function() {
 
         // XXX: a bit of a hack to disable losing level by time
         // for all but last level
-        if (game.level === N_LEVELS && new Date().getTime() >= game.endTime) {
-            // game over handling and animation
-            game.disableGame();
-            $('#time').animate( {
-                    backgroundColor: 'red'
-                },
-                {
-                duration: 2000,
-                easing: 'easeOutBounce',
-                complete: function() {
-                    game.gameOver();
-                }
-            });
-        } else {
+        // if (game.level === N_LEVELS && new Date().getTime() >= game.startTime) {
+        //     // game over handling and animation
+        //     game.disableGame();
+        //     $('#time').animate( {
+        //             backgroundColor: 'red'
+        //         },
+        //         {
+        //         duration: 2000,
+        //         easing: 'easeOutBounce',
+        //         complete: function() {
+        //             game.gameOver();
+        //         }
+        //     });
+        // } else {
             // default behaviour
             $('#time').text(_this.getTimeStamp());
-        }
+        // }
     };
 
     this.updateScore = function() {
