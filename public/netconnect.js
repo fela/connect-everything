@@ -260,22 +260,14 @@ game.init = function() {
     
     this.winGame = function() {
         if (!game.active) {return;} // don't win after the game over animation
+        var time = this.getSecondsPassed();
         this.disableGame();
-        this.level++;
         for (var i = 0; i < this.numOfCells(); ++i) {
             var cell = this.cells[i];
             if (!cell.marked) {
                 cell.marked = true;
                 cell.draw(true);
             }
-        }
-        this.loadGame();
-    };
-
-    this.gameOver = function() {
-        game.disableGame();
-        for (var i = 0; i < this.cells.length; ++i) {
-             this.cells[i].reset(0.6);
         }
 
         var score = this.calculateScore();
@@ -284,12 +276,22 @@ game.init = function() {
         game.updateScore();
         setTimeout( function() {
             var dialog = $('#game-over');
-            dialog.find('.points-number').text(score);
+            dialog.find('.points-number').text(time);
             dialog.find('.level-number').text(level);
-            dialog.find('input[name=score]').val(score);
+            dialog.find('input[name=score]').val(time);
             dialog.find('input[name=level]').val(level);
             dialog.modal();
         }, 1000);
+    };
+
+    this.gameOver = function() {
+        game.disableGame();
+        for (var i = 0; i < this.cells.length; ++i) {
+             this.cells[i].reset(0.6);
+        }
+
+        this.loadGame();
+
     };
 
     this.disableGame = function() {
@@ -448,14 +450,9 @@ game.init = function() {
         this.cellsSolved = 0;
         this.updateScore();
         $('.level-num').text(this.level);
-        if (this.level == 1 || (this.expertMode && this.level == 9) ) {
-            $('#loading').hide();
-            $('#game').show();
-            $('footer').show();
-        }
-        if (this.level == N_LEVELS) {
-            $('#time').removeClass('hide')
-        }
+        $('#loading').hide();
+        $('#game').show();
+        $('footer').show();
     };
 
 
@@ -708,9 +705,13 @@ game.init = function() {
         this.draw(true);
     };
     
-    this.getTimeStamp = function() {
+    this.getSecondsPassed = function() {
         var nowTime = new Date().getTime();
-        var diff = (nowTime - this.startTime)/1000; // time in seconds
+        return (nowTime - this.startTime)/1000; // time in seconds
+    };
+
+    this.getTimeStamp = function() {
+        var diff = this.getSecondsPassed(); // time in seconds
         var mins = Math.floor(diff / 60);
         var secs = Math.floor(diff % 60);
         var secsStr = '' + secs;
@@ -723,26 +724,7 @@ game.init = function() {
     var _this = this;
     this.updateTimeDisplay = function() {
         if (!game.active) return;
-
-        // XXX: a bit of a hack to disable losing level by time
-        // for all but last level
-        // if (game.level === N_LEVELS && new Date().getTime() >= game.startTime) {
-        //     // game over handling and animation
-        //     game.disableGame();
-        //     $('#time').animate( {
-        //             backgroundColor: 'red'
-        //         },
-        //         {
-        //         duration: 2000,
-        //         easing: 'easeOutBounce',
-        //         complete: function() {
-        //             game.gameOver();
-        //         }
-        //     });
-        // } else {
-            // default behaviour
-            $('#time').text(_this.getTimeStamp());
-        // }
+        $('#time').text(_this.getTimeStamp());
     };
 
     this.updateScore = function() {
@@ -770,11 +752,19 @@ game.init = function() {
 
 
     // first time initializations
-    if (this.expertMode) {
-        this.level = 9;
-    } else {
-        this.level = 1;
+    function getParameterByName(name) {
+        name = name.replace(/[\[]/, "\\[").replace(/[\]]/, "\\]");
+        var regex = new RegExp("[\\?&]" + name + "=([^&#]*)"),
+            results = regex.exec(location.search);
+        return results === null ? "" : decodeURIComponent(results[1].replace(/\+/g, " "));
     }
+
+    var levelParam = getParameterByName('level');
+    this.level = 9;
+    if (levelParam) {
+        this.level = parseInt(levelParam);
+    }
+
     this.loadGame();
     $(document).ready($(window).resize(function(){game.resize()}));
     setInterval(_this.updateTimeDisplay, 1000);
