@@ -192,6 +192,11 @@ get '/expert' do
   load_game
 end
 
+get '/play' do
+  @expert_mode = true
+  load_game
+end
+
 
 # used to keep dyno alive through uptimerobot.com
 get '/ping' do
