@@ -60,10 +60,7 @@ class Score
   def self.recent_chart(opts={})
     num_of_plays = limit = CHART_SIZE
 
-    options = {order: [:created_at.desc]}
-    if opts[:level]
-      options[:level] = opts[:level]
-    end
+    options = opts.merge({order: [:created_at.desc]})
 
     last = all(options)[num_of_plays]
     options[:order] = [:score.asc]
@@ -91,10 +88,7 @@ class Score
   
   def self.recent_players(opts={}, limit=CHART_SIZE)
     res = {} # name to highest score
-    options = {order: [:created_at.desc]}
-    if opts[:level]
-      options[:level] = opts[:level]
-    end
+    options = opts.merge({order: [:created_at.desc]})
     all(options).each do |s|
       # end after 10th name
       # but first check for other games by same authors
