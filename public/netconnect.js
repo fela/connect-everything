@@ -276,7 +276,7 @@ game.init = function() {
         game.updateScore();
         setTimeout( function() {
             var dialog = $('#game-over');
-            dialog.find('.points-number').text(time);
+            dialog.find('.time-number').text(time);
             dialog.find('.level-number').text(level);
             dialog.find('input[name=score]').val(time);
             dialog.find('input[name=level]').val(level);

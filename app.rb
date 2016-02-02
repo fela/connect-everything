@@ -21,9 +21,9 @@ class Score
   def update_best_score
     # find best score
     best = nil
-    scores_same_name = Score.all(normalized_name: normalized_name)
+    scores_same_name = Score.all(level: level, normalized_name: normalized_name)
     scores_same_name.each do |s|
-      if best == nil || s.score > best.score
+      if best == nil || s.score < best.score
         best = s
       end
     end
@@ -40,11 +40,15 @@ class Score
     limit = opts[:limit] || CHART_SIZE
     
     
-    options = {order: [:score.desc]}
+    options = {order: [:score.asc]}
     if opts[:single_entries]
       options[:is_best_score] = true
     end
     
+    if opts[:level]
+      options[:level] = opts[:level]
+    end
+
     if days
       time = Time.now - 60*60*24*days
       options[:created_at.gt] = time
@@ -55,13 +59,19 @@ class Score
   
   def self.recent_chart(opts={})
     num_of_plays = limit = CHART_SIZE
-    last = all(order: [:created_at.desc])[num_of_plays]
+
+    options = {order: [:created_at.desc]}
+    if opts[:level]
+      options[:level] = opts[:level]
+    end
+
+    last = all(options)[num_of_plays]
+    options[:order] = [:score.asc]
     if last
       time = last.created_at
-      all(:created_at.gt => time, order:[:score.desc])#[0...limit]
-    else
-      all(order:[:score.desc])
+      options[:created_at.gt] = time
     end
+    all(options)#[0...limit]
   end
   
   def self.recent_games
@@ -76,23 +86,27 @@ class Score
         break if scores.size == CHART_SIZE
       end
     end
-    scores.sort_by{|x|-x.score}
+    scores.sort_by{|x| x.score}
   end
   
-  def self.recent_players(limit=CHART_SIZE)
+  def self.recent_players(opts={}, limit=CHART_SIZE)
     res = {} # name to highest score
-    all(order: [:created_at.desc]).each do |s|
+    options = {order: [:created_at.desc]}
+    if opts[:level]
+      options[:level] = opts[:level]
+    end
+    all(options).each do |s|
       # end after 10th name
       # but first check for other games by same authors
       name = s.normalized_name
       isnewname = !res.has_key?(name)
       break if res.size == limit && isnewname
       
-      if isnewname or s.score > res[name].score
+      if isnewname or s.score < res[name].score
         res[name] = s
       end
     end
-    res.values.sort_by{|x|-x.score}
+    res.values.sort_by{|x| x.score}
   end
   
   def self.update_scores
@@ -150,17 +164,17 @@ helpers do
   include Rack::Utils  
   alias_method :h, :escape_html
 
-  def load_game
-    @chart = Score.recent_players(5)
+  def load_game(level=9)
+    @chart = Score.recent_players({level: level}, 5)
     @name = session[:name]
     @already_played = session[:already_played]
     haml :index
   end
 
-  def show_hiscores
-    @overAllChart = Score.chart(single_entries: true)
-    @recentChart = Score.recent_chart
-    @recentPeopleChart = Score.recent_players
+  def show_hiscores(opts={})
+    @overAllChart = Score.chart(opts.merge({single_entries: true}))
+    @recentChart = Score.recent_chart(opts)
+    @recentPeopleChart = Score.recent_players(opts)
     haml :hiscores
   end
   
@@ -249,6 +263,11 @@ end
 get '/hiscores' do
   @new_score_id = params[:newscore].to_i
   show_hiscores
+end
+
+get '/hiscores/:level' do
+  @new_score_id = params[:newscore].to_i
+  show_hiscores(level: params[:level])
 end
 
 get '/test' do
