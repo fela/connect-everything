@@ -10,9 +10,8 @@ class Score
   property :id,         Serial    # An auto-increment integer key
   property :name,       String
   property :normalized_name, String
-  property :time,       String
+  property :time,       Float
   property :level, String
-  property :score,      Float
   property :is_best_score, Boolean, default: false
   property :created_at, DateTime
 
@@ -23,15 +22,13 @@ class Score
     best = nil
     scores_same_name = Score.all(level: level, normalized_name: normalized_name)
     scores_same_name.each do |s|
-      if best == nil || s.score < best.score
+      if best == nil || s.time < best.time
         best = s
       end
     end
     scores_same_name.each do |s|
       s.is_best_score = (s == best)
       s.save
-      # for db simplification
-      #s.destroy if !s.is_best_score
     end
   end
   
@@ -40,7 +37,7 @@ class Score
     limit = opts[:limit] || CHART_SIZE
     
     
-    options = {order: [:score.asc]}
+    options = {order: [:time.asc]}
     if opts[:single_entries]
       options[:is_best_score] = true
     end
@@ -50,8 +47,8 @@ class Score
     end
 
     if days
-      time = Time.now - 60*60*24*days
-      options[:created_at.gt] = time
+      timestamp = Time.now - 60*60*24*days
+      options[:created_at.gt] = timestamp
     end
     
     all(options)[0...limit]
@@ -63,10 +60,10 @@ class Score
     options = opts.merge({order: [:created_at.desc]})
 
     last = all(options)[num_of_plays]
-    options[:order] = [:score.asc]
+    options[:order] = [:time.asc]
     if last
-      time = last.created_at
-      options[:created_at.gt] = time
+      timestamp = last.created_at
+      options[:created_at.gt] = timestamp
     end
     all(options)#[0...limit]
   end
@@ -83,7 +80,7 @@ class Score
         break if scores.size == CHART_SIZE
       end
     end
-    scores.sort_by{|x| x.score}
+    scores.sort_by{|x| x.time}
   end
   
   def self.recent_players(opts={}, limit=CHART_SIZE)
@@ -96,11 +93,11 @@ class Score
       isnewname = !res.has_key?(name)
       break if res.size == limit && isnewname
       
-      if isnewname or s.score < res[name].score
+      if isnewname or s.time < res[name].time
         res[name] = s
       end
     end
-    res.values.sort_by{|x| x.score}
+    res.values.sort_by{|x| x.time}
   end
   
   def self.update_scores
@@ -139,16 +136,15 @@ configure do
   DataMapper.setup(:default, ENV['DATABASE_URL'] || 'postgres://fela:test@localhost/connect2')
   DataMapper.finalize
   # uncomment the following two lines the first time you run!
-  #DataMapper.auto_upgrade!
-  #DataMapper.auto_migrate!
+  # DataMapper.auto_upgrade!
+  # DataMapper.auto_migrate!
   #Score.strip_names
   #Score.update_best_scores
   #Score.remove_blacklisted
   DataMapper::Model.raise_on_save_failure = true
-  
+  # Score.all().each {|s| s.destroy if s.time == 0.0}
   #Score.update_scores
   #Score.rename_difficulties
-  #Score.all().each {|s| s.destroy if s.name != 'f'}
   month = 2592000
   use Rack::Session::Cookie, expire_after: month*3
   #enable :sessions
@@ -241,17 +237,18 @@ post '/submitscore' do
   end
 
   level = h params[:level]
-  score = params[:score].to_f
+  score = params[:time].to_f
 
   session[:already_played] = true if score > 10
   
   session[:name] = name
   
-  @new_score = Score.create(name: name, normalized_name: name.downcase, level: level, score: score, created_at: Time.now)
+  @new_score = Score.create(name: name, normalized_name: name.downcase, level: level, time: score, created_at: Time.now)
+  p @new_score
   @new_score.save
   @new_score.update_best_score
 
-  redirect "/hiscores?newscore=#{@new_score.id}"
+  redirect "/hiscores/#{level}?newscore=#{@new_score.id}"
 end
 
 get '/hiscores' do

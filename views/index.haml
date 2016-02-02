@@ -83,7 +83,7 @@
 
     %form#game-over-form{action: '/submitscore', method: 'post'}
       %input{name: 'level', type: 'hidden', value: '0'}
-      %input{name: 'score', type: 'hidden', value: '0'}
+      %input{name: 'time', type: 'hidden', value: '0'}
       - if @name && @name.size > 0
         %input#nameinput{name: 'name', type: 'text', value: @name, placeholder: 'Enter your name...', maxlength: '14'}
       - else

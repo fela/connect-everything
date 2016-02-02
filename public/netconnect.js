@@ -22,7 +22,6 @@ game.BORDER = 1/4;
 // if the id '#expert-mode' is present that the mode is expert mode
 game.expertMode = $('#expert-mode').length ? true : false;
 game.init = function() {
-
     this.currentCellAndRotation;
 
     $(canvas).on('mousedown', function(evt){game.handleClick(evt)});
@@ -278,7 +277,7 @@ game.init = function() {
             var dialog = $('#game-over');
             dialog.find('.time-number').text(time);
             dialog.find('.level-number').text(level);
-            dialog.find('input[name=score]').val(time);
+            dialog.find('input[name=time]').val(time);
             dialog.find('input[name=level]').val(level);
             dialog.modal();
         }, 1000);
@@ -1380,5 +1379,22 @@ function getMousePosition(canvas, event) {
 } */
 
 game.init();
+
+// this section for debugging purposes, remove later 
+var thingy = function() {
+    var time = "234.53";
+    var level = "10";
+    setTimeout( function() {
+        var dialog = $('#game-over');
+        dialog.find('.time-number').text(time);
+        dialog.find('.level-number').text(level);
+        dialog.find('input[name=time]').val(time);
+        dialog.find('input[name=level]').val(level);
+        dialog.modal();
+    }, 1000);
+};
+
+$('body').append("<button class='merp'>click me!</button>");
+$('.merp').click(thingy);
 
 })();
