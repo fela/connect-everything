@@ -99,7 +99,11 @@ class Score
     end
     res.values.sort_by{|x| x.time}
   end
-  
+
+  def self.best_per_level
+    repository(:default).adapter.select('select f.* from ( SELECT MIN(time), level FROM scores group by level) as x inner join scores as f on f.level = x.level and f.time = x.min;')
+  end
+
   def self.update_scores
     all().each {|s| s.update_score}
   end
@@ -165,6 +169,7 @@ helpers do
     @overAllChart = Score.chart(opts.merge({single_entries: true}))
     @recentChart = Score.recent_chart(opts)
     @recentPeopleChart = Score.recent_players(opts)
+    @perLevel = Score.best_per_level
     haml :hiscores
   end
   
