@@ -11,7 +11,7 @@ class Score
   property :name,       String
   property :normalized_name, String
   property :time,       Float
-  property :level, String
+  property :level,      Integer
   property :is_best_score, Boolean, default: false
   property :created_at, DateTime
 
@@ -101,7 +101,7 @@ class Score
   end
 
   def self.best_per_level
-    repository(:default).adapter.select('select f.* from ( SELECT MIN(time), level FROM scores group by level) as x inner join scores as f on f.level = x.level and f.time = x.min;')
+    repository(:default).adapter.select('select f.* from ( SELECT MIN(time), level FROM scores group by level) as x inner join scores as f on f.level = x.level and f.time = x.min order by level;')
   end
 
   def self.update_scores
