@@ -126,6 +126,6 @@ input {
     min-width: 150px;
 }
 
-#disqus_thread {
-    margin-top: 30px;
+.checkbox.inline {
+    padding: 3px 0 0 0;
 }

@@ -162,6 +162,8 @@ helpers do
     @chart = Score.recent_players({level: level}, 5)
     @name = session[:name]
     @already_played = session[:already_played]
+    @dont_play_again = session[:dont_play_again]
+    @level = level
     haml :index
   end
 
@@ -193,17 +195,12 @@ end
 
 
 get '/' do
-  load_game
-end
-
-get '/expert' do
-  @expert_mode = true
-  load_game
+  load_game()
 end
 
 get '/play' do
-  @expert_mode = true
-  load_game
+  @level = params['level'] ? params['level'].to_i : 9
+  load_game(@level)
 end
 
 
@@ -242,18 +239,24 @@ post '/submitscore' do
   end
 
   level = h params[:level]
-  score = params[:time].to_f
+  time = params[:time].to_f
 
-  session[:already_played] = true if score > 10
+  session[:already_played] = true
   
   session[:name] = name
   
-  @new_score = Score.create(name: name, normalized_name: name.downcase, level: level, time: score, created_at: Time.now)
+  @new_score = Score.create(name: name, normalized_name: name.downcase, level: level, time: time, created_at: Time.now)
   p @new_score
   @new_score.save
   @new_score.update_best_score
 
-  redirect "/hiscores/#{level}?newscore=#{@new_score.id}"
+  play_again = params[:play_again]
+  session[:dont_play_again] = !play_again
+  if play_again
+    redirect "/play?level=#{level}"
+  else
+    redirect "/hiscores/#{level}?newscore=#{@new_score.id}"
+  end
 end
 
 get '/hiscores' do
