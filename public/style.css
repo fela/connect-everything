@@ -33,6 +33,7 @@ canvas {
 
 span#time {
     color: white;
+    font-size: 3em;
 }
 
 span#score {

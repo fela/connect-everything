@@ -99,7 +99,6 @@ game.init = function() {
             setTimeout(function() {game.gameOver()}, 4000);
         } else {
             this.cellsSolved += 1;
-            this.updateScore();
         }
     };
     
@@ -260,6 +259,7 @@ game.init = function() {
     this.winGame = function() {
         if (!game.active) {return;} // don't win after the game over animation
         var time = this.getSecondsPassed();
+        this.updateTimeDisplay();
         this.disableGame();
         for (var i = 0; i < this.numOfCells(); ++i) {
             var cell = this.cells[i];
@@ -268,11 +268,8 @@ game.init = function() {
                 cell.draw(true);
             }
         }
-
-        var score = this.calculateScore();
-        score = Math.round(score * 10)/10; // round to 1 digit
         var level = this.level;
-        game.updateScore();
+
         setTimeout( function() {
             var dialog = $('#game-over');
             dialog.find('.time-number').text(time);
@@ -447,7 +444,6 @@ game.init = function() {
         this.mouseOverCell = null;
         this.resize();
         this.cellsSolved = 0;
-        this.updateScore();
         $('.level-num').text(this.level);
         $('#loading').hide();
         $('#game').show();
@@ -725,23 +721,6 @@ game.init = function() {
         if (!game.active) return;
         $('#time').text(_this.getTimeStamp());
     };
-
-    this.updateScore = function() {
-        var score = Math.round(this.calculateScore()*10)/10;
-        $('#score').text(score);
-    };
-
-    this.calculateScore = function() {
-        var score;
-        var percentageCompleted = this.cellsSolved/this.numOfCells();
-        if (this.expertMode && this.level < 12.5) {
-            score = 15 * (this.level-9) + 15 * percentageCompleted;
-        } else {
-            score = 5 * (this.level-1) + 5 * percentageCompleted;
-        }
-        return score;
-    };
-
 
     this.colors = ["rgb(84,213,1)",
                    "rgb(213,85,1)",
@@ -1379,22 +1358,5 @@ function getMousePosition(canvas, event) {
 } */
 
 game.init();
-
-// this section for debugging purposes, remove later 
-var thingy = function() {
-    var time = "234.53";
-    var level = "10";
-    setTimeout( function() {
-        var dialog = $('#game-over');
-        dialog.find('.time-number').text(time);
-        dialog.find('.level-number').text(level);
-        dialog.find('input[name=time]').val(time);
-        dialog.find('input[name=level]').val(level);
-        dialog.modal();
-    }, 1000);
-};
-
-$('body').append("<button class='merp'>click me!</button>");
-$('.merp').click(thingy);
 
 })();
