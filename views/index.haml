@@ -41,20 +41,9 @@
         %span.level-num
           1
       %br
-      %strong
-        %span#score
-          0
-
-      /%br
-      /%br
-      /moves:
-      /%strong
-      /  %span#moves.moves
-      /    0/0
       %br
-      points
-      %br
-      %span#time.hide
+      time:
+      %span#time
         0:00
         %br
       %br
@@ -65,34 +54,37 @@
 
 %p#loading
   %br
-  loading first level
+  loading level #{@level}
 
 #game-over.modal.hide.fade
   .modal-header
     %button.close{type: 'button', data: {dismiss: 'modal'}, aria: {hidden: 'true'} } &times;
-    %h3 Game Over!
+    %h3 You Win!
   .modal-body
-    .points
-      %span.points-number 0
-      points
+    .time
+      time:
+      %span.time-number 0
     .level
       level
       %span.level-number
         0
 
-    %form#game-over-form{action: '/submitscore', method: 'post'}
+    %form#you-win-form{action: '/submitscore', method: 'post'}
       %input{name: 'level', type: 'hidden', value: '0'}
-      %input{name: 'score', type: 'hidden', value: '0'}
+      %input{name: 'time', type: 'hidden', value: '0'}
       - if @name && @name.size > 0
         %input#nameinput{name: 'name', type: 'text', value: @name, placeholder: 'Enter your name...', maxlength: '14'}
       - else
         %input#nameinput{name: 'name', type: 'text', placeholder: 'Enter your name...', maxlength: '14'}
+      %br
+      %input{type:"checkbox", name:"play_again", value:"Play again?", checked: !@dont_play_again, id:'check_play'}
+      %label{for:'check_play', class:"checkbox inline"}Play this level again after submitting score?
     = partial(:list, title: 'recent players', scores: @chart) unless @chart.empty?
 
   .modal-footer
     %button.btn{ type: 'button', data: {dismiss: 'modal'}, aria: {hidden: 'true'}} Cancel
-    %a.btn{href: @expert_mode ? '/expert' : '/'} New Game
-    %button#submit-score.btn.btn-primary{type: 'submit', form: 'game-over-form'} Save score
+    %a.btn{href: @level? "/play?level=#{@level}" : '/'} New Game
+    %button#submit-score.btn.btn-primary{type: 'submit', form: 'you-win-form'} Save score
 
 :javascript
   $(document).ready( function() {

@@ -22,7 +22,8 @@ game.BORDER = 1/4;
 // if the id '#expert-mode' is present that the mode is expert mode
 game.expertMode = $('#expert-mode').length ? true : false;
 game.init = function() {
-    
+    this.currentCellAndRotation;
+
     $(canvas).on('mousedown', function(evt){game.handleClick(evt)});
     $(canvas).on('touchstart', function(evt){game.handleClick(evt)});
 
@@ -31,16 +32,32 @@ game.init = function() {
             return;
         }
         var cellAndRotation = game.getCellAndRotation(evt);
-        var cell = cellAndRotation.cell;
-        var clockwise = cellAndRotation.clockwise;
-
-        if (!cell || cell.marked) {
-            return;
-        }
-        if ($.browser.mobile) clockwise = true;
-        cell.setMoved();
-        cell.animate(clockwise);
+        game.rotateCell(cellAndRotation);
         evt.preventDefault();
+    };
+
+    this.rotateCell = function(cellAndRotation) {
+      var cell = cellAndRotation.cell;
+      var clockwise = cellAndRotation.clockwise;
+
+      if (!cell || cell.marked) {
+          return;
+      }
+      if ($.browser.mobile) clockwise = true;
+      cell.setMoved();
+      cell.animate(clockwise);
+    }
+
+    this.updateCellAndRotation = function(newCellAndRotation) {
+        if (game.currentCellAndRotation && game.currentCellAndRotation.cell) {
+            game.currentCellAndRotation.cell.background = 'black';
+            game.currentCellAndRotation.cell.draw(true);
+        }
+        game.currentCellAndRotation = newCellAndRotation;
+        if (newCellAndRotation && newCellAndRotation.cell) {
+            game.currentCellAndRotation.cell.background = 'rgb(90, 90, 180)';
+            game.currentCellAndRotation.cell.draw(true);
+        }
     };
     // disable selection that can get triggered on double mouse click
     canvas.onselectstart = function() {return false;};
@@ -58,7 +75,7 @@ game.init = function() {
     this.handleRotationStarted = function(cell) {
         if (!game.active) return;
         var lastCell = this.lastCell;
-        if (lastCell && lastCell !== cell && !lastCell.isRotating) {
+        if (lastCell !== cell && lastCell && lastCell.moved) {
             this.cellMoved(lastCell);
         }
         this.lastCell = cell;
@@ -69,6 +86,7 @@ game.init = function() {
     // or after ti has been marked
     // checks if the cell is a correct solution
     this.cellMoved = function(cell) {
+        if (!cell || cell.isRotating) return;
         cell.marked = true;
         cell.moved = false;
         cell.draw(true);
@@ -81,7 +99,6 @@ game.init = function() {
             setTimeout(function() {game.gameOver()}, 4000);
         } else {
             this.cellsSolved += 1;
-            this.updateScore();
         }
     };
     
@@ -129,7 +146,11 @@ game.init = function() {
         var cell = game.cellAt(row, col);
         
         var clockwise = Math.floor(x / (size/2))%2 == 1;
-        return {cell:cell, clockwise:clockwise};
+        var cellAndRotation = {cell:cell, clockwise:clockwise};
+        if (cell) {
+            game.updateCellAndRotation(cellAndRotation);
+        }
+        return cellAndRotation;
     };
 
     $(canvas).mousemove(function(evt) {
@@ -160,13 +181,57 @@ game.init = function() {
         if (!game.active) return;
         game.mouseout();
     };
-    
+
+    var keys = {'space':32, 'ctrl':17, 'esc': 27, 'shift': 16, 'j': 74, 'k': 75, 'l': 76};
+
+    var directions = {
+        'up': {'x':-1, 'y':0},
+        'down':{'x':1, 'y':0},
+        'right':{'x':0, 'y':1},
+        'left':{'x':0, 'y':-1}
+    };
+    var keyMappings = {
+        40: 'down', 83: 'down',
+        38: 'up', 87: 'up',
+        39: 'right', 68: 'right',
+        37: 'left', 65: 'left'
+    };
     window.onkeydown = function(event) {
         if (!game.active) return;
-        if (event.keyCode != 32) return;
-        var cell = game.mouseOverCell;
-        if (cell && !cell.marked && !cell.isRotating) {
-            game.cellMoved(cell);
+        if (event.keyCode === keys['space'] || event.keyCode === keys['l']) {
+            // lock current cell in place
+            var cell = game.mouseOverCell;
+            if (game.currentCellAndRotation) {
+                game.cellMoved(game.currentCellAndRotation.cell);
+            } else if (cell && !cell.marked){
+                game.cellMoved(cell);
+            }
+        } else if (event.keyCode === keys['esc']) {
+            if (game.currentCellAndRotation && game.currentCellAndRotation.cell) {
+                game.currentCellAndRotation.cell.resetToShuffled();
+            }
+        } else if (event.keyCode === keys['j']){
+            // turn current cell
+            if (game.currentCellAndRotation) {
+                game.currentCellAndRotation.clockwise = false;
+                game.rotateCell(game.currentCellAndRotation);
+            }
+        } else if (event.keyCode === keys['k']){
+            // turn current cell
+            if (game.currentCellAndRotation) {
+                game.currentCellAndRotation.clockwise = true;
+                game.rotateCell(game.currentCellAndRotation);
+            }
+        } else if (keyMappings.hasOwnProperty(event.keyCode)) {
+            var dir = directions[keyMappings[event.keyCode]];
+            if (!game.currentCellAndRotation) {
+                var cell = game.cellAt(0, 0);
+                game.updateCellAndRotation({cell:cell, clockwise:true});
+            }
+            var oldCell = game.currentCellAndRotation.cell;
+            var newCell = game.cellAt(
+                oldCell.row + dir.x, oldCell.col + dir.y, game.wrapping);
+            game.updateCellAndRotation({cell:newCell, clockwise:game.currentCellAndRotation.clockwise});
         }
     };
     
@@ -193,8 +258,9 @@ game.init = function() {
     
     this.winGame = function() {
         if (!game.active) {return;} // don't win after the game over animation
+        var time = this.getSecondsPassed();
+        this.updateTimeDisplay();
         this.disableGame();
-        this.level++;
         for (var i = 0; i < this.numOfCells(); ++i) {
             var cell = this.cells[i];
             if (!cell.marked) {
@@ -202,7 +268,16 @@ game.init = function() {
                 cell.draw(true);
             }
         }
-        this.loadGame();
+        var level = this.level;
+
+        setTimeout( function() {
+            var dialog = $('#game-over');
+            dialog.find('.time-number').text(time);
+            dialog.find('.level-number').text(level);
+            dialog.find('input[name=time]').val(time);
+            dialog.find('input[name=level]').val(level);
+            dialog.modal();
+        }, 1000);
     };
 
     this.gameOver = function() {
@@ -211,18 +286,8 @@ game.init = function() {
              this.cells[i].reset(0.6);
         }
 
-        var score = this.calculateScore();
-        score = Math.round(score * 10)/10; // round to 1 digit
-        var level = this.level;
-        game.updateScore();
-        setTimeout( function() {
-            var dialog = $('#game-over');
-            dialog.find('.points-number').text(score);
-            dialog.find('.level-number').text(level);
-            dialog.find('input[name=score]').val(score);
-            dialog.find('input[name=level]').val(level);
-            dialog.modal();
-        }, 1000);
+        this.loadGame();
+
     };
 
     this.disableGame = function() {
@@ -360,7 +425,7 @@ game.init = function() {
         this.cols = serializedGame.cols;
         this.wrapping = serializedGame.wrapping;
         this.difficulty = 'easy'; // TODO remove
-        this.endTime = new Date().getTime() + serializedGame.time*1000;
+        this.startTime = new Date().getTime();
         this.active = true;
         this.updateTimeDisplay();
         var size = 1;
@@ -379,16 +444,10 @@ game.init = function() {
         this.mouseOverCell = null;
         this.resize();
         this.cellsSolved = 0;
-        this.updateScore();
         $('.level-num').text(this.level);
-        if (this.level == 1 || (this.expertMode && this.level == 9) ) {
-            $('#loading').hide();
-            $('#game').show();
-            $('footer').show();
-        }
-        if (this.level == N_LEVELS) {
-            $('#time').removeClass('hide')
-        }
+        $('#loading').hide();
+        $('#game').show();
+        $('footer').show();
     };
 
 
@@ -606,6 +665,7 @@ game.init = function() {
         for (var i = 0; i < this.cells.length; ++i) {
             var cell = this.cells[i];
             cell.shuffle();
+            cell.shuffledMoves = 0;
         }
     };
     
@@ -640,9 +700,13 @@ game.init = function() {
         this.draw(true);
     };
     
-    this.getTimeStamp = function() {
+    this.getSecondsPassed = function() {
         var nowTime = new Date().getTime();
-        var diff = (this.endTime - nowTime)/1000; // time in seconds
+        return (nowTime - this.startTime)/1000; // time in seconds
+    };
+
+    this.getTimeStamp = function() {
+        var diff = this.getSecondsPassed(); // time in seconds
         var mins = Math.floor(diff / 60);
         var secs = Math.floor(diff % 60);
         var secsStr = '' + secs;
@@ -655,44 +719,8 @@ game.init = function() {
     var _this = this;
     this.updateTimeDisplay = function() {
         if (!game.active) return;
-
-        // XXX: a bit of a hack to disable losing level by time
-        // for all but last level
-        if (game.level === N_LEVELS && new Date().getTime() >= game.endTime) {
-            // game over handling and animation
-            game.disableGame();
-            $('#time').animate( {
-                    backgroundColor: 'red'
-                },
-                {
-                duration: 2000,
-                easing: 'easeOutBounce',
-                complete: function() {
-                    game.gameOver();
-                }
-            });
-        } else {
-            // default behaviour
-            $('#time').text(_this.getTimeStamp());
-        }
+        $('#time').text(_this.getTimeStamp());
     };
-
-    this.updateScore = function() {
-        var score = Math.round(this.calculateScore()*10)/10;
-        $('#score').text(score);
-    };
-
-    this.calculateScore = function() {
-        var score;
-        var percentageCompleted = this.cellsSolved/this.numOfCells();
-        if (this.expertMode && this.level < 12.5) {
-            score = 15 * (this.level-9) + 15 * percentageCompleted;
-        } else {
-            score = 5 * (this.level-1) + 5 * percentageCompleted;
-        }
-        return score;
-    };
-
 
     this.colors = ["rgb(84,213,1)",
                    "rgb(213,85,1)",
@@ -702,11 +730,19 @@ game.init = function() {
 
 
     // first time initializations
-    if (this.expertMode) {
-        this.level = 9;
-    } else {
-        this.level = 1;
+    function getParameterByName(name) {
+        name = name.replace(/[\[]/, "\\[").replace(/[\]]/, "\\]");
+        var regex = new RegExp("[\\?&]" + name + "=([^&#]*)"),
+            results = regex.exec(location.search);
+        return results === null ? "" : decodeURIComponent(results[1].replace(/\+/g, " "));
     }
+
+    var levelParam = getParameterByName('level');
+    this.level = 9;
+    if (levelParam) {
+        this.level = parseInt(levelParam);
+    }
+
     this.loadGame();
     $(document).ready($(window).resize(function(){game.resize()}));
     setInterval(_this.updateTimeDisplay, 1000);
@@ -741,6 +777,7 @@ function Cell(row, col, size, game, binary) {
     this.Left = 3;
     this.cables = [false,false,false,false];
     this.originalPosition = 0;
+    this.shuffledMoves = 0;
     if (binary) {
         var cables = binary.split('')
         this.cables = binary.split('').map(function(val) {
@@ -898,7 +935,7 @@ function Cell(row, col, size, game, binary) {
     
     this.drawBackground = function() {
         var ctx = this.context;
-        if (this.marked) {
+        if (this.marked || this.background !== 'black') {
             ctx.fillStyle = this.background;
         } else {
             ctx.fillStyle = 'rgb(100,100,100)';
@@ -1107,12 +1144,14 @@ function Cell(row, col, size, game, binary) {
     
     this.rotateClockwise = function() {
         this.originalPosition = this.normalizeMoves(this.originalPosition-1);
+        this.shuffledMoves = this.normalizeMoves(this.shuffledMoves-1);
         var last = this.cables.pop();
         this.cables.unshift(last);
         this.dirty = true;
     };
     this.rotateCounterClockwise = function() {
         this.originalPosition = this.normalizeMoves(this.originalPosition+1);
+        this.shuffledMoves = this.normalizeMoves(this.shuffledMoves+1);
         var first = this.cables.shift();
         this.cables.push(first);
         this.dirty = true;
@@ -1203,6 +1242,21 @@ function Cell(row, col, size, game, binary) {
 
     this.stopErrorAnimation = function() {
         clearInterval(this.errorAnimationInterval);
+    };
+
+    this.resetToShuffled = function() {
+        var moves = this.shuffledMoves;
+        var clockwise = moves > 0;
+        for (var j = 0; j < Math.abs(moves); ++j) {
+            if (clockwise) {
+                this.rotateClockwise();
+            } else {
+                this.rotateCounterClockwise();
+            }
+        }
+        this.unsetMoved();
+        this.game.updateGame();
+        this.draw();
     };
 
     this.reset = function(time) {

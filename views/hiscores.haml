@@ -1,5 +1,7 @@
 .row-fluid
   .span4
+    = partial :list, scores: @perLevel, title: 'best per level'
+  .span4
     = partial :list, scores: @overAllChart, title: 'all time best players'
   .span4
     = partial :list, scores: @recentPeopleChart, title: 'recent players'

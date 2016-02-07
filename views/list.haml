@@ -9,7 +9,7 @@
       %th
         level
       %th
-        score
+        time
     - scores.each_with_index do |s, i|
       %tr{class: s.id == @new_score_id ? 'newscore' : ''}
         %td.pos #{i+1}.
@@ -17,4 +17,4 @@
           = s.name
         %td #{s.level}
         %td.points
-          = s.score.round(1)
+          = s.time.round(1)

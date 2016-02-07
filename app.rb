@@ -10,9 +10,8 @@ class Score
   property :id,         Serial    # An auto-increment integer key
   property :name,       String
   property :normalized_name, String
-  property :time,       String
-  property :level, String
-  property :score,      Float
+  property :time,       Float
+  property :level,      Integer
   property :is_best_score, Boolean, default: false
   property :created_at, DateTime
 
@@ -21,17 +20,15 @@ class Score
   def update_best_score
     # find best score
     best = nil
-    scores_same_name = Score.all(normalized_name: normalized_name)
+    scores_same_name = Score.all(level: level, normalized_name: normalized_name)
     scores_same_name.each do |s|
-      if best == nil || s.score > best.score
+      if best == nil || s.time < best.time
         best = s
       end
     end
     scores_same_name.each do |s|
       s.is_best_score = (s == best)
       s.save
-      # for db simplification
-      #s.destroy if !s.is_best_score
     end
   end
   
@@ -40,14 +37,18 @@ class Score
     limit = opts[:limit] || CHART_SIZE
     
     
-    options = {order: [:score.desc]}
+    options = {order: [:time.asc]}
     if opts[:single_entries]
       options[:is_best_score] = true
     end
     
+    if opts[:level]
+      options[:level] = opts[:level]
+    end
+
     if days
-      time = Time.now - 60*60*24*days
-      options[:created_at.gt] = time
+      timestamp = Time.now - 60*60*24*days
+      options[:created_at.gt] = timestamp
     end
     
     all(options)[0...limit]
@@ -55,13 +56,16 @@ class Score
   
   def self.recent_chart(opts={})
     num_of_plays = limit = CHART_SIZE
-    last = all(order: [:created_at.desc])[num_of_plays]
+
+    options = opts.merge({order: [:created_at.desc]})
+
+    last = all(options)[num_of_plays]
+    options[:order] = [:time.asc]
     if last
-      time = last.created_at
-      all(:created_at.gt => time, order:[:score.desc])#[0...limit]
-    else
-      all(order:[:score.desc])
+      timestamp = last.created_at
+      options[:created_at.gt] = timestamp
     end
+    all(options)#[0...limit]
   end
   
   def self.recent_games
@@ -76,25 +80,30 @@ class Score
         break if scores.size == CHART_SIZE
       end
     end
-    scores.sort_by{|x|-x.score}
+    scores.sort_by{|x| x.time}
   end
   
-  def self.recent_players(limit=CHART_SIZE)
+  def self.recent_players(opts={}, limit=CHART_SIZE)
     res = {} # name to highest score
-    all(order: [:created_at.desc]).each do |s|
+    options = opts.merge({order: [:created_at.desc]})
+    all(options).each do |s|
       # end after 10th name
       # but first check for other games by same authors
       name = s.normalized_name
       isnewname = !res.has_key?(name)
       break if res.size == limit && isnewname
       
-      if isnewname or s.score > res[name].score
+      if isnewname or s.time < res[name].time
         res[name] = s
       end
     end
-    res.values.sort_by{|x|-x.score}
+    res.values.sort_by{|x| x.time}
   end
-  
+
+  def self.best_per_level
+    repository(:default).adapter.select('select f.* from ( SELECT MIN(time), level FROM scores group by level) as x inner join scores as f on f.level = x.level and f.time = x.min order by level;')
+  end
+
   def self.update_scores
     all().each {|s| s.update_score}
   end
@@ -128,18 +137,18 @@ end
 
  
 configure do
-  DataMapper.setup(:default, ENV['DATABASE_URL'] || 'postgres://fela:@localhost/net-connect2')
+  DataMapper.setup(:default, ENV['DATABASE_URL'] || 'postgres://fela:test@localhost/connect2')
   DataMapper.finalize
+  # uncomment the following two lines the first time you run!
+  # DataMapper.auto_upgrade!
+  # DataMapper.auto_migrate!
   #Score.strip_names
-  #DataMapper.auto_upgrade!
   #Score.update_best_scores
-  #DataMapper.auto_migrate!
   #Score.remove_blacklisted
   DataMapper::Model.raise_on_save_failure = true
-  
+  # Score.all().each {|s| s.destroy if s.time == 0.0}
   #Score.update_scores
   #Score.rename_difficulties
-  #Score.all().each {|s| s.destroy if s.name != 'f'}
   month = 2592000
   use Rack::Session::Cookie, expire_after: month*3
   #enable :sessions
@@ -149,17 +158,20 @@ helpers do
   include Rack::Utils  
   alias_method :h, :escape_html
 
-  def load_game
-    @chart = Score.recent_players(5)
+  def load_game(level=9)
+    @chart = Score.recent_players({level: level}, 5)
     @name = session[:name]
     @already_played = session[:already_played]
+    @dont_play_again = session[:dont_play_again]
+    @level = level
     haml :index
   end
 
-  def show_hiscores
-    @overAllChart = Score.chart(single_entries: true)
-    @recentChart = Score.recent_chart
-    @recentPeopleChart = Score.recent_players
+  def show_hiscores(opts={})
+    @overAllChart = Score.chart(opts.merge({single_entries: true}))
+    @recentChart = Score.recent_chart(opts)
+    @recentPeopleChart = Score.recent_players(opts)
+    @perLevel = Score.best_per_level
     haml :hiscores
   end
   
@@ -183,12 +195,12 @@ end
 
 
 get '/' do
-  load_game
+  load_game()
 end
 
-get '/expert' do
-  @expert_mode = true
-  load_game
+get '/play' do
+  @level = params['level'] ? params['level'].to_i : 9
+  load_game(@level)
 end
 
 
@@ -227,22 +239,34 @@ post '/submitscore' do
   end
 
   level = h params[:level]
-  score = params[:score].to_f
+  time = params[:time].to_f
 
-  session[:already_played] = true if score > 10
+  session[:already_played] = true
   
   session[:name] = name
   
-  @new_score = Score.create(name: name, normalized_name: name.downcase, level: level, score: score, created_at: Time.now)
+  @new_score = Score.create(name: name, normalized_name: name.downcase, level: level, time: time, created_at: Time.now)
+  p @new_score
   @new_score.save
   @new_score.update_best_score
 
-  redirect "/hiscores?newscore=#{@new_score.id}"
+  play_again = params[:play_again]
+  session[:dont_play_again] = !play_again
+  if play_again
+    redirect "/play?level=#{level}"
+  else
+    redirect "/hiscores/#{level}?newscore=#{@new_score.id}"
+  end
 end
 
 get '/hiscores' do
   @new_score_id = params[:newscore].to_i
   show_hiscores
+end
+
+get '/hiscores/:level' do
+  @new_score_id = params[:newscore].to_i
+  show_hiscores(level: params[:level])
 end
 
 get '/test' do

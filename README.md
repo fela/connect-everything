@@ -1,4 +1,24 @@
-Source code of [Connect Everything!](http://connecteverything2.herokuapp.com)
+Source code of [Connect Everything!](http://connect-everything-salogel42.c9.io/)
+
+# Instructions for setting up your own version
+
+* Fork this repository
+* Go to c9.io and sign up with GitHub
+* Create a new workspace from the repository, selecting the Ruby template
+* install postgres with `sudo apt-get install postgresql postgresql-server-dev-9.3 libpq-dev`
+* Use the `bundle` command to grab all the necessary libraries.  May need to manually `sudo gem install` some libs if they fail.
+* Start the postgres server with `sudo service postgresql start`
+* Go into postgres with `sudo sudo -u postgres psql`
+* In postgres
+```
+create user fela with password 'test';
+create database connect2 owner fela;
+\q
+```
+* Go into `app.rb` and uncomment the lines `DataMapper.auto_upgrade!` and `DataMapper.auto_migrate!` (TODO(sdspikes): add command line arg for this)
+    * re-comment them after first launch, unless you want to blow away the data 
+* Launch the app with `ruby app.rb -p $PORT -o $IP`
+
 
 ```
 Copyright (C) 2012-2014  Fela Winkelmolen

@@ -34,12 +34,12 @@
     %script{src: '/bootstrap.min.js'}
     =yield
     %footer
-      %a{:href => '/'} new game
-      |
-      %a{:href => '/expert'} new expert game
-      |
+      Choose a level to play:
+      =partial(:choose_level, title: 'choose level')
+      %br
+      - if @level
+        %a{:href => '/'} new game
+        |
       %a{:href => '/rules'} rules
       |
-      %a{:href => '/comments'} comments
-      |
-      %a{:href => '/hiscores'} hiscores
+      %a{:href => '/hiscores'} all high scores
