@@ -1,7 +1,7 @@
+require 'data_mapper'
 require 'sinatra'
 require 'sinatra/content_for'
 require 'haml'
-require 'data_mapper'
 require './grid'
 
 class Score
