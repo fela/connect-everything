@@ -88,7 +88,7 @@ class Score
       isnewname = !res.has_key?(name)
       break if res.size == limit && isnewname
       
-      if isnewname or s.score > res[name].score
+      if s.score > 0 and (isnewname or s.score > res[name].score)
         res[name] = s
       end
     end
