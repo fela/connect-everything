@@ -3,12 +3,14 @@ require 'sinatra/content_for'
 require 'haml'
 require 'sequel'
 require './grid'
-require 'dotenv/load'
+# require 'dotenv/load'
 
-db_url = ENV['POSTGRES_URL'] || "postgres://#{ENV['POSTGRES_USER']}:#{ENV['POSTGRES_PASSWORD']}@#{ENV['POSTGRES_HOST']}/#{ENV['POSTGRES_DATABASE']}?sslmode=require"
+# db_url = ENV['POSTGRES_URL'] || "postgres://#{ENV['POSTGRES_USER']}:#{ENV['POSTGRES_PASSWORD']}@#{ENV['POSTGRES_HOST']}/#{ENV['POSTGRES_DATABASE']}?sslmode=require"
 
-# Database connection
-DB = Sequel.connect(db_url)
+# # Database connection
+# DB = Sequel.connect(db_url)
+DB = Sequel.connect("tmpdb.sqlite3")
+
 
 # Define tables if they don't exist
 DB.create_table?(:scores) do
