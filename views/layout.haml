@@ -5,7 +5,7 @@
     %link{href: "/bootstrap.min.css", rel: "stylesheet", media: "screen"}
     %link{href: "/style.css", rel: "stylesheet"}
     %meta{property: 'og:image', content: base_url + '/screen.png'}
-    =yield_content :head
+    !=yield_content :head
   %body
     :javascript
       // google analytics
@@ -32,7 +32,7 @@
     %script{src: '/jquery.color-2.1.2.min.js'}
     %script{src: '/jquery.easing.min.js'}
     %script{src: '/bootstrap.min.js'}
-    =yield
+    !=yield
     %footer
       %a{:href => '/'} new game
       |

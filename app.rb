@@ -1,37 +1,42 @@
-require 'data_mapper'
 require 'sinatra'
 require 'sinatra/content_for'
 require 'haml'
+require 'sequel'
 require './grid'
 
-class Score
-  include DataMapper::Resource
-  
-  property :id,         Serial    # An auto-increment integer key
-  property :name,       String
-  property :normalized_name, String
-  property :time,       String
-  property :level, String
-  property :score,      Float
-  property :is_best_score, Boolean, default: false
-  property :created_at, DateTime
+# Connect to SQLite database
+DB = Sequel.sqlite('./testdb.db')
 
+# Define tables if they don't exist
+DB.create_table?(:scores) do
+  primary_key :id
+  String :name
+  String :normalized_name
+  String :time
+  String :level
+  Float :score
+  Boolean :is_best_score, default: false
+  DateTime :created_at
+end
+
+DB.create_table?(:items) do
+  String :text, primary_key: true
+end
+
+# Model Definitions
+class Score < Sequel::Model
   CHART_SIZE = 10
   
+  plugin :timestamps, update_on_create: true
+
   def update_best_score
-    # find best score
     best = nil
-    scores_same_name = Score.all(normalized_name: normalized_name)
+    scores_same_name = Score.where(normalized_name: normalized_name)
     scores_same_name.each do |s|
-      if best == nil || s.score > best.score
-        best = s
-      end
+      best = s if best.nil? || s.score > best.score
     end
     scores_same_name.each do |s|
-      s.is_best_score = (s == best)
-      s.save
-      # for db simplification
-      #s.destroy if !s.is_best_score
+      s.update(is_best_score: (s == best))
     end
   end
   
@@ -39,106 +44,83 @@ class Score
     days = opts[:days] || nil
     limit = opts[:limit] || CHART_SIZE
     
-    
-    options = {order: [:score.desc]}
-    if opts[:single_entries]
-      options[:is_best_score] = true
-    end
-    
-    if days
-      time = Time.now - 60*60*24*days
-      options[:created_at.gt] = time
-    end
-    
-    all(options)[0...limit]
+    dataset = Score.order(Sequel.desc(:score))
+    dataset = dataset.where(is_best_score: true) if opts[:single_entries]
+    dataset = dataset.where{created_at > Time.now - 60*60*24*days} if days
+
+    dataset.limit(limit).all
   end
   
   def self.recent_chart(opts={})
     num_of_plays = limit = CHART_SIZE
-    last = all(order: [:created_at.desc])[num_of_plays]
+    last = order(Sequel.desc(:created_at)).limit(num_of_plays, num_of_plays).first
     if last
       time = last.created_at
-      all(:created_at.gt => time, order:[:score.desc])#[0...limit]
+      where{created_at > time}.order(Sequel.desc(:score)).all
     else
-      all(order:[:score.desc])
+      order(Sequel.desc(:score)).all
     end
   end
   
   def self.recent_games
     scores = []
-    names = {}
-    names.default = 0
-    all(order: [:created_at.desc]).each do |s|
+    names = Hash.new(0)
+    order(Sequel.desc(:created_at)).each do |s|
       name = s.normalized_name
       names[name] += 1
       if names[name] <= 2
         scores << s
-        break if scores.size == CHART_SIZE
+        break if scores.size >= CHART_SIZE
       end
     end
-    scores.sort_by{|x|-x.score}
+    scores.sort_by { |x| -x.score }
   end
   
   def self.recent_players(limit=CHART_SIZE)
-    res = {} # name to highest score
-    all(order: [:created_at.desc]).each do |s|
-      # end after 10th name
-      # but first check for other games by same authors
+    res = {}
+    order(Sequel.desc(:created_at)).each do |s|
       name = s.normalized_name
-      isnewname = !res.has_key?(name)
-      break if res.size == limit && isnewname
+      is_new_name = !res.key?(name)
+      break if res.size >= limit && is_new_name
       
-      if s.score > 0 and (isnewname or s.score > res[name].score)
+      if s.score > 0 && (is_new_name || s.score > res[name].score)
         res[name] = s
       end
     end
-    res.values.sort_by{|x|-x.score}
+    res.values.sort_by { |x| -x.score }
   end
   
   def self.update_scores
-    all().each {|s| s.update_score}
+    all.each(&:update_score)
   end
 
   def self.update_best_scores
-    all().each {|s| s.update_best_score}
+    all.each(&:update_best_score)
   end
+  
   def self.strip_names
-    all().each {|s|s.name = s.name.strip; s.normalized_name = s.name.downcase; s.save}
+    all.each do |s|
+      s.update(name: s.name.strip, normalized_name: s.name.strip.downcase)
+    end
   end
+  
   def self.remove_blacklisted
     blacklist = [/blacklisted/]
-    all().each do |s|
+    all.each do |s|
       blacklist.each do |m|
-        if s.name =~ m
-          s.destroy
-          break
-        end
+        s.destroy if s.name =~ m
       end
     end
   end
 end
 
-class Item
-  include DataMapper::Resource
- 
-  property :text, String,:key => true
+class Item < Sequel::Model
+  set_primary_key :text
 end
 
-
-
- 
 configure do
-  DataMapper.setup(:default, ENV['DATABASE_URL'] || 'postgres://fela:@localhost/net-connect2')
-  DataMapper.finalize
-  #Score.strip_names
-  #DataMapper.auto_upgrade!
-  #Score.update_best_scores
-  #DataMapper.auto_migrate!
-  #Score.remove_blacklisted
-  DataMapper::Model.raise_on_save_failure = true
-  
-  #Score.update_scores
-  #Score.rename_difficulties
+  Sequel::Model.raise_on_save_failure = true
+
   #Score.all().each {|s| s.destroy if s.name != 'f'}
   month = 2592000
   use Rack::Session::Cookie, expire_after: month*3
@@ -150,7 +132,7 @@ helpers do
   alias_method :h, :escape_html
 
   def load_game
-    @chart = Score.recent_players(5)
+    @chart = [] # Score.recent_players(5)
     @name = session[:name]
     @already_played = session[:already_played]
     haml :index

@@ -391,7 +391,7 @@ game.init = function() {
         }
     };
 
-
+    /*
     this.isGameOk = function() {
         var diff = this.getDifficulty();
         if (diff[diff.length-1] == 1) {
@@ -535,7 +535,7 @@ game.init = function() {
             }
         }
         return true;
-    };
+    };*/
     
     this.connectedComponents = function() {
         var i, cell;
