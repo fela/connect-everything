@@ -1,5 +1,5 @@
 source 'http://rubygems.org'
-ruby "~> 3.2.3"
+ruby "~> 3.3.4"
 gem 'sinatra'
 gem 'haml'
 gem 'rdiscount' # for markdown
