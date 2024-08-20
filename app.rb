@@ -9,7 +9,7 @@ require './grid'
 
 # # Database connection
 # DB = Sequel.connect(db_url)
-DB = Sequel.connect("tmpdb.sqlite3")
+DB = Sequel.sqlite('testdb.db')
 
 
 # Define tables if they don't exist
