@@ -1,4 +1,4 @@
-Source code of [Connect Everything!](http://connecteverything2.herokuapp.com)
+Source code of [Connect Everything!](https://connect-everything.onrender.com/)
 
 ```
 Copyright (C) 2012-2014  Fela Winkelmolen
