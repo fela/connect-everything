@@ -4,9 +4,10 @@ gem 'sinatra'
 gem 'haml'
 gem 'rdiscount' # for markdown
 
-gem 'sqlite3'
+gem 'pg'
 gem 'sequel'
 gem 'colorize'
 gem 'sinatra-contrib'
+gem 'dotenv'
 
 gem "rackup", "~> 2.1"

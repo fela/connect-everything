@@ -3,9 +3,12 @@ require 'sinatra/content_for'
 require 'haml'
 require 'sequel'
 require './grid'
+require 'dotenv/load'
 
-# Connect to SQLite database
-DB = Sequel.sqlite('./testdb.db')
+db_url = ENV['POSTGRES_URL'] || "postgres://#{ENV['POSTGRES_USER']}:#{ENV['POSTGRES_PASSWORD']}@#{ENV['POSTGRES_HOST']}/#{ENV['POSTGRES_DATABASE']}?sslmode=require"
+
+# Database connection
+DB = Sequel.connect(db_url)
 
 # Define tables if they don't exist
 DB.create_table?(:scores) do
